@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Investment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <nav class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Real Estate Investment Platform</h1>
+            <div>
+                <a href="#" class="mx-2 hover:underline">Home</a>
+                <a href="#" class="mx-2 hover:underline">Profile</a>
+                <a href="#" class="mx-2 hover:underline">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto mt-8 px-4">
+        <h2 class="text-3xl font-semibold mb-6 text-gray-800">Investment Tools</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Property Description Generator -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="text-xl font-semibold mb-4 text-blue-600">Property Description Generator</h3>
+                <p class="mb-4 text-gray-600">Generate compelling descriptions for your properties using AI.</p>
+                <a href="{{ url_for('main.property_description_generator') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">Generate Description</a>
+                <p class="mt-2 text-sm text-gray-500">Note: This tool may be subject to API usage limits.</p>
+            </div>
+
+            <!-- Placeholder for future tools -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="text-xl font-semibold mb-4 text-blue-600">Coming Soon</h3>
+                <p class="mb-4 text-gray-600">More powerful tools are on the way to enhance your real estate investments!</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto bg-gray-800 text-white py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
