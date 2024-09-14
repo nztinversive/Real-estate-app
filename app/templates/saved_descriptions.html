@@ -30,7 +30,7 @@
                 <p class="text-gray-700 mb-4">{{ description.description }}</p>
                 <div class="grid grid-cols-2 gap-2">
                     {% for image_path in description.image_paths.split(',') %}
-                    <img src="{{ image_path }}" alt="Property Image" class="w-full h-auto rounded-lg shadow-sm">
+                    <img src="{{ url_for('static', filename=image_path) }}" alt="Property Image" class="w-full h-auto rounded-lg shadow-sm">
                     {% endfor %}
                 </div>
                 <p class="text-sm text-gray-500 mt-2">Generated on: {{ description.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
