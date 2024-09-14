@@ -115,3 +115,16 @@ class PropertyComparison(db.Model):
     location = db.Column(db.String(200), nullable=False)
     estimated_rent = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ROICalculation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    property_name = db.Column(db.String(100), nullable=False)
+    purchase_price = db.Column(db.Float, nullable=False)
+    closing_costs = db.Column(db.Float, nullable=False)
+    rehab_costs = db.Column(db.Float, nullable=False)
+    annual_rental_income = db.Column(db.Float, nullable=False)
+    annual_expenses = db.Column(db.Float, nullable=False)
+    appreciation_rate = db.Column(db.Float, nullable=False)
+    holding_period = db.Column(db.Integer, nullable=False)
+    roi = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

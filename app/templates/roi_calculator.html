@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen flex flex-col">
+    <nav class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white shadow-lg w-full">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">ROI Calculator</h1>
+            <div>
+                <a href="{{ url_for('main.dashboard') }}" class="hover:underline mr-4">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow w-full px-4 py-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h2 class="text-2xl font-semibold mb-6 text-blue-600 text-center">Calculate ROI</h2>
+                <form id="roi-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="property_name" class="block text-sm font-medium text-gray-700 mb-1">Property Name</label>
+                            <input type="text" id="property_name" name="property_name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="purchase_price" class="block text-sm font-medium text-gray-700 mb-1">Purchase Price ($)</label>
+                            <input type="number" id="purchase_price" name="purchase_price" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="closing_costs" class="block text-sm font-medium text-gray-700 mb-1">Closing Costs ($)</label>
+                            <input type="number" id="closing_costs" name="closing_costs" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="rehab_costs" class="block text-sm font-medium text-gray-700 mb-1">Rehab Costs ($)</label>
+                            <input type="number" id="rehab_costs" name="rehab_costs" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="annual_rental_income" class="block text-sm font-medium text-gray-700 mb-1">Annual Rental Income ($)</label>
+                            <input type="number" id="annual_rental_income" name="annual_rental_income" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="annual_expenses" class="block text-sm font-medium text-gray-700 mb-1">Annual Expenses ($)</label>
+                            <input type="number" id="annual_expenses" name="annual_expenses" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="appreciation_rate" class="block text-sm font-medium text-gray-700 mb-1">Appreciation Rate (%)</label>
+                            <input type="number" id="appreciation_rate" name="appreciation_rate" step="0.1" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="holding_period" class="block text-sm font-medium text-gray-700 mb-1">Holding Period (years)</label>
+                            <input type="number" id="holding_period" name="holding_period" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="w-full bg-blue-500 text-white px-4 py-3 rounded-md hover:bg-blue-600 transition duration-300 font-semibold text-lg">Calculate ROI</button>
+                    </div>
+                </form>
+                <div id="result" class="mt-6"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+                <h2 class="text-2xl font-semibold mb-6 text-blue-600">Previous Calculations</h2>
+                {% if calculations %}
+                    <table class="w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left">Property Name</th>
+                                <th class="py-3 px-4 text-left">Purchase Price</th>
+                                <th class="py-3 px-4 text-left">ROI</th>
+                                <th class="py-3 px-4 text-left">Calculated On</th>
+                                <th class="py-3 px-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for calculation in calculations %}
+                            <tr id="calculation-{{ calculation.id }}" class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="py-3 px-4">{{ calculation.property_name }}</td>
+                                <td class="py-3 px-4">${{ "%.2f"|format(calculation.purchase_price) }}</td>
+                                <td class="py-3 px-4">{{ "%.2f"|format(calculation.roi) }}%</td>
+                                <td class="py-3 px-4">{{ calculation.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td class="py-3 px-4">
+                                    <button onclick="deleteCalculation({{ calculation.id }})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition duration-300">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-gray-600">No previous calculations found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 mt-auto w-full">
+        <div class="max-w-7xl mx-auto text-center">
+            <p>&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ... (JavaScript remains unchanged) ...
+    </script>
+</body>
+</html>

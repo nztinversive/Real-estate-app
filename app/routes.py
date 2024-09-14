@@ -4,7 +4,7 @@ import os
 import base64
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison
+from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison, ROICalculation
 from datetime import datetime
 
 main = Blueprint('main', __name__)
@@ -168,6 +168,55 @@ def property_comparison():
 def delete_property_comparison(id):
     property_comparison = PropertyComparison.query.get_or_404(id)
     db.session.delete(property_comparison)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@main.route('/roi_calculator', methods=['GET', 'POST'])
+def roi_calculator():
+    if request.method == 'POST':
+        purchase_price = float(request.form['purchase_price'])
+        closing_costs = float(request.form['closing_costs'])
+        rehab_costs = float(request.form['rehab_costs'])
+        annual_rental_income = float(request.form['annual_rental_income'])
+        annual_expenses = float(request.form['annual_expenses'])
+        appreciation_rate = float(request.form['appreciation_rate']) / 100
+        holding_period = int(request.form['holding_period'])
+
+        total_investment = purchase_price + closing_costs + rehab_costs
+        total_profit = 0
+        for year in range(holding_period):
+            annual_cash_flow = annual_rental_income - annual_expenses
+            appreciation = purchase_price * (1 + appreciation_rate) ** year - purchase_price
+            total_profit += annual_cash_flow + appreciation
+
+        roi = (total_profit / total_investment) * 100
+
+        new_calculation = ROICalculation(
+            property_name=request.form['property_name'],
+            purchase_price=purchase_price,
+            closing_costs=closing_costs,
+            rehab_costs=rehab_costs,
+            annual_rental_income=annual_rental_income,
+            annual_expenses=annual_expenses,
+            appreciation_rate=appreciation_rate * 100,
+            holding_period=holding_period,
+            roi=roi
+        )
+        db.session.add(new_calculation)
+        db.session.commit()
+
+        return jsonify({
+            'roi': roi,
+            'id': new_calculation.id
+        })
+
+    calculations = ROICalculation.query.order_by(ROICalculation.created_at.desc()).all()
+    return render_template('roi_calculator.html', calculations=calculations)
+
+@main.route('/delete_roi_calculation/<int:id>', methods=['POST'])
+def delete_roi_calculation(id):
+    calculation = ROICalculation.query.get_or_404(id)
+    db.session.delete(calculation)
     db.session.commit()
     return jsonify({'success': True})
 
