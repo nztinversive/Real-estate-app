@@ -5,48 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Description Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         body {
             font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
-<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen flex flex-col">
-    <nav class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Property Description Generator</h1>
-            <div>
-                <a href="{{ url_for('main.dashboard') }}" class="hover:underline mr-4">Dashboard</a>
-                <a href="{{ url_for('main.saved_descriptions') }}" class="hover:underline">Saved Descriptions</a>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.dashboard') }}" class="flex-shrink-0">
+                        <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                    </a>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
+                        <a href="{{ url_for('main.property_description_generator') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Description Generator</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto mt-8 px-4">
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-600">Upload Property Photos</h2>
-            <form id="upload-form" enctype="multipart/form-data" class="space-y-4">
-                <div class="flex items-center justify-center w-full">
-                    <label for="file-upload" class="flex flex-col items-center justify-center w-full h-64 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition duration-300">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-10 h-10 mb-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                            <p class="mb-2 text-sm text-blue-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p class="text-xs text-blue-500">PNG, JPG, JPEG or GIF (MAX. 800x400px)</p>
-                        </div>
-                        <input id="file-upload" name="photos" type="file" class="hidden" multiple accept="image/*" />
-                    </label>
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Property Description Generator</h1>
+        
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Upload Property Photos</h2>
+                <form id="upload-form" enctype="multipart/form-data" class="space-y-4">
+                    <div class="flex items-center justify-center w-full">
+                        <label for="file-upload" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-gray-500">PNG, JPG, JPEG or GIF (MAX. 800x400px)</p>
+                            </div>
+                            <input id="file-upload" name="photos" type="file" class="hidden" multiple accept="image/*" />
+                        </label>
+                    </div>
+                    <div id="file-list" class="mt-4"></div>
+                    <button type="submit" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300">Generate Description</button>
+                </form>
+                <div id="result" class="mt-6"></div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Descriptions</h2>
+                <div id="generated-descriptions" class="space-y-4">
+                    <!-- Generated descriptions will be inserted here -->
                 </div>
-                <div id="file-list" class="mt-4"></div>
-                <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">Generate Description</button>
-            </form>
-            <div id="result" class="mt-4"></div>
+            </div>
         </div>
     </main>
 
-    <footer class="mt-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+    <footer class="bg-white mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; 2024 Real Estate Investment Platform. All rights reserved.
+            </p>
         </div>
     </footer>
 
@@ -55,6 +76,7 @@
         const fileList = document.getElementById('file-list');
         const uploadForm = document.getElementById('upload-form');
         const result = document.getElementById('result');
+        const generatedDescriptions = document.getElementById('generated-descriptions');
 
         fileUpload.addEventListener('change', function(e) {
             fileList.innerHTML = '';
@@ -79,15 +101,20 @@
                 if (data.error) {
                     result.innerHTML = `<p class="text-red-500">${data.error}</p>`;
                 } else {
-                    let imagesHtml = data.images.map(img => `<img src="${img}" alt="Property Image" class="w-full h-auto mb-4 rounded-lg shadow-md">`).join('');
                     result.innerHTML = `
-                        <h3 class="text-xl font-semibold mb-2 text-blue-600">Generated Description:</h3>
-                        <p class="text-gray-700 mb-4">${data.description}</p>
-                        <h4 class="text-lg font-semibold mb-2 text-blue-600">Uploaded Images:</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${imagesHtml}
+                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md">
+                            <h3 class="text-lg font-semibold mb-2">Generated Description:</h3>
+                            <p>${data.description}</p>
                         </div>
                     `;
+                    
+                    const descriptionElement = document.createElement('div');
+                    descriptionElement.className = 'bg-gray-50 p-4 rounded-md';
+                    descriptionElement.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-2">${new Date().toLocaleString()}</h4>
+                        <p>${data.description}</p>
+                    `;
+                    generatedDescriptions.prepend(descriptionElement);
                 }
             })
             .catch(error => {

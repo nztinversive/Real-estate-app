@@ -5,68 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Investment Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         body {
             font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
-<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen flex flex-col">
-    <nav class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Real Estate Investment Platform</h1>
-            <div>
-                <a href="#" class="mx-2 hover:underline">Home</a>
-                <a href="#" class="mx-2 hover:underline">Profile</a>
-                <a href="#" class="mx-2 hover:underline">Logout</a>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.dashboard') }}" class="flex-shrink-0">
+                        <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                    </a>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Dashboard</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Profile</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Settings</a>
+                    </div>
+                </div>
+                <div>
+                    <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logout</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto mt-8 px-4">
-        <h2 class="text-3xl font-semibold mb-6 text-gray-800">Investment Tools</h2>
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Investment Tools</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Property Description Generator -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-                <h3 class="text-xl font-semibold mb-4 text-blue-600">Property Description Generator</h3>
-                <p class="mb-4 text-gray-600">Generate compelling descriptions for your properties using AI.</p>
-                <a href="{{ url_for('main.property_description_generator') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">Generate Description</a>
-                <p class="mt-2 text-sm text-gray-500">Note: This tool may be subject to API usage limits.</p>
+            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Property Description Generator</h2>
+                            <p class="mt-1 text-sm text-gray-500">Generate compelling descriptions for your properties using AI.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.property_description_generator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Generate Description
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Cash Flow Calculator -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-                <h3 class="text-xl font-semibold mb-4 text-blue-600">Cash Flow Calculator</h3>
-                <p class="mb-4 text-gray-600">Calculate and analyze cash flow for your real estate investments.</p>
-                <a href="{{ url_for('main.cash_flow_calculator') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300">Calculate Cash Flow</a>
+            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Cash Flow Calculator</h2>
+                            <p class="mt-1 text-sm text-gray-500">Calculate and analyze cash flow for your investments.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.cash_flow_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Calculate Cash Flow
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Property Comparison Tool -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-                <h3 class="text-xl font-semibold mb-4 text-blue-600">Property Comparison Tool</h3>
-                <p class="mb-4 text-gray-600">Compare multiple properties side by side to make informed decisions.</p>
-                <a href="{{ url_for('main.property_comparison') }}" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition duration-300">Compare Properties</a>
+            <!-- Document Organizer -->
+            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Document Organizer</h2>
+                            <p class="mt-1 text-sm text-gray-500">Manage and organize all your real estate documents.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.document_organizer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                            Organize Documents
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- ROI Calculator -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-                <h3 class="text-xl font-semibold mb-4 text-blue-600">ROI Calculator</h3>
-                <p class="mb-4 text-gray-600">Calculate the potential Return on Investment for your properties.</p>
-                <a href="{{ url_for('main.roi_calculator') }}" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition duration-300">Calculate ROI</a>
+            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">ROI Calculator</h2>
+                            <p class="mt-1 text-sm text-gray-500">Calculate the Return on Investment for your properties.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.roi_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Calculate ROI
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Placeholder for future tools -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-                <h3 class="text-xl font-semibold mb-4 text-blue-600">Coming Soon</h3>
-                <p class="mb-4 text-gray-600">More powerful tools are on the way to enhance your real estate investments!</p>
+            <!-- Property Comparison -->
+            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Property Comparison</h2>
+                            <p class="mt-1 text-sm text-gray-500">Compare multiple properties side by side.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.property_comparison') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            Compare Properties
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer class="mt-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; 2024 Real Estate Investment Platform. All rights reserved.
+            </p>
         </div>
     </footer>
 </body>

@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_file
 from werkzeug.utils import secure_filename
 import os
+from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison, ROICalculation, Document
+from .document_processor import save_file, extract_text, generate_tags
+import json
 import base64
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison, ROICalculation
 from datetime import datetime
 
 main = Blueprint('main', __name__)
@@ -23,78 +25,38 @@ def dashboard():
 @main.route('/property_description_generator', methods=['GET', 'POST'])
 def property_description_generator():
     if request.method == 'POST':
+        # Handle POST request (file upload and description generation)
         if 'photos' not in request.files:
             return jsonify({'error': 'No photos provided'}), 400
 
         photos = request.files.getlist('photos')
-        image_messages = []
-        saved_image_paths = []
-
-        # Print the UPLOAD_FOLDER path for debugging
-        print(f"Accessing UPLOAD_FOLDER: {current_app.config.get('UPLOAD_FOLDER', 'Not set')}")
-
-        UPLOAD_FOLDER = current_app.config.get('UPLOAD_FOLDER')
-        if not UPLOAD_FOLDER:
-            return jsonify({'error': 'Upload folder not configured'}), 500
+        photo_descriptions = []
 
         for photo in photos:
             if photo and allowed_file(photo.filename):
                 filename = secure_filename(photo.filename)
-                file_path = os.path.join(UPLOAD_FOLDER, filename)
-                photo.save(file_path)
-                # Update this line to use url_for
-                saved_image_paths.append(url_for('static', filename=f'uploads/{filename}'))
+                file_path = save_file(photo)
                 
-                # Encode the image
-                with open(file_path, "rb") as image_file:
-                    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                
-                image_messages.append({
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/jpeg;base64,{encoded_string}"
-                    }
+                extracted_text = extract_text(file_path)
+                tags = generate_tags(extracted_text)
+
+                photo_descriptions.append({
+                    'filename': filename,
+                    'extracted_text': extracted_text,
+                    'tags': tags
                 })
 
-        if not image_messages:
+        if not photo_descriptions:
             return jsonify({'error': 'No valid photos provided'}), 400
 
-        # Prepare messages for the API
-        messages: list[ChatCompletionMessageParam] = [
-            {"role": "system", "content": "You are a professional real estate agent. Analyze the provided images and generate a compelling property description."},
-            {"role": "user", "content": [
-                {"type": "text", "text": "Please describe this property based on the images provided."},
-                *image_messages
-            ]}
-        ]
+        # Here you would typically use the OpenAI API to generate a description
+        # For now, we'll just return a placeholder
+        generated_description = "This is a placeholder for the generated property description."
 
-        try:
-            # Generate description using OpenAI API with the specified model
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                max_tokens=300
-            )
-
-            description = response.choices[0].message.content.strip()
-            
-            # Save the description to the database
-            new_description = PropertyDescription(
-                description=description,
-                image_paths=','.join(saved_image_paths),
-                created_at=datetime.utcnow()
-            )
-            db.session.add(new_description)
-            db.session.commit()
-
-            return jsonify({
-                'description': description,
-                'images': saved_image_paths
-            })
-
-        except Exception as e:
-            print(f"OpenAI API error: {str(e)}")
-            return jsonify({'error': 'An error occurred while generating the description. Please try again later.'}), 500
+        return jsonify({
+            'description': generated_description,
+            'photo_descriptions': photo_descriptions
+        })
 
     return render_template('property_description_generator.html')
 
@@ -220,8 +182,73 @@ def delete_roi_calculation(id):
     db.session.commit()
     return jsonify({'success': True})
 
+@main.route('/document_organizer', methods=['GET', 'POST'])
+def document_organizer():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = save_file(file)
+            
+            extracted_text = extract_text(file_path)
+            tags = generate_tags(extracted_text)
+
+            new_document = Document(
+                filename=filename,
+                file_path=file_path,
+                file_type=file.content_type,
+                extracted_text=extracted_text,
+                tags=json.dumps(tags),
+                property_id=None  # Set to None or get a property_id from the form if needed
+            )
+            db.session.add(new_document)
+            db.session.commit()
+
+            return jsonify({'success': True, 'document_id': new_document.id}), 201
+        
+    documents = Document.query.order_by(Document.upload_date.desc()).all()
+    return render_template('document_organizer.html', documents=documents)
+
+@main.route('/document/<int:document_id>')
+def get_document(document_id):
+    document = Document.query.get_or_404(document_id)
+    return jsonify({
+        'id': document.id,
+        'filename': document.filename,
+        'file_type': document.file_type,
+        'upload_date': document.upload_date.isoformat(),
+        'tags': json.loads(document.tags),
+        'version': document.version
+    })
+
+@main.route('/document/<int:document_id>/download')
+def download_document(document_id):
+    document = Document.query.get_or_404(document_id)
+    return send_file(document.file_path, as_attachment=True, attachment_filename=document.filename)
+
+@main.route('/document/search')
+def search_documents():
+    query = request.args.get('q', '')
+    documents = Document.query.filter(
+        (Document.filename.ilike(f'%{query}%')) |
+        (Document.tags.ilike(f'%{query}%')) |
+        (Document.extracted_text.ilike(f'%{query}%'))
+    ).all()
+    return jsonify([{
+        'id': doc.id,
+        'filename': doc.filename,
+        'file_type': doc.file_type,
+        'upload_date': doc.upload_date.isoformat(),
+        'tags': json.loads(doc.tags)
+    } for doc in documents])
+
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Comment out other routes for now

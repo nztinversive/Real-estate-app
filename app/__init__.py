@@ -1,9 +1,12 @@
 from flask import Flask
 from .extensions import db
+from flask_migrate import Migrate
 import os
 
+migrate = Migrate()
+
 def create_app():
-    app = Flask(__name__, static_folder='static')
+    app = Flask(__name__)
     
     # Configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///your_database.db'
@@ -16,14 +19,11 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Import and register blueprints
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
-
-    # Create database tables
-    with app.app_context():
-        db.create_all()
 
     # Print the UPLOAD_FOLDER path for debugging
     print(f"UPLOAD_FOLDER set to: {app.config['UPLOAD_FOLDER']}")
