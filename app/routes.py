@@ -4,7 +4,7 @@ import os
 import base64
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from .models import db, PropertyDescription
+from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison
 from datetime import datetime
 
 main = Blueprint('main', __name__)
@@ -102,6 +102,74 @@ def property_description_generator():
 def saved_descriptions():
     descriptions = PropertyDescription.query.order_by(PropertyDescription.created_at.desc()).all()
     return render_template('saved_descriptions.html', descriptions=descriptions)
+
+@main.route('/cash_flow_calculator', methods=['GET', 'POST'])
+def cash_flow_calculator():
+    if request.method == 'POST':
+        property_name = request.form.get('property_name')
+        purchase_price = float(request.form.get('purchase_price'))
+        rental_income = float(request.form.get('rental_income'))
+        expenses = float(request.form.get('expenses'))
+        mortgage_payment = float(request.form.get('mortgage_payment'))
+
+        cash_flow = rental_income - expenses - mortgage_payment
+
+        calculation = CashFlowCalculation(
+            property_name=property_name,
+            purchase_price=purchase_price,
+            rental_income=rental_income,
+            expenses=expenses,
+            mortgage_payment=mortgage_payment,
+            cash_flow=cash_flow
+        )
+        db.session.add(calculation)
+        db.session.commit()
+
+        return jsonify({
+            'cash_flow': cash_flow,
+            'id': calculation.id
+        })
+
+    return render_template('cash_flow_calculator.html')
+
+@main.route('/saved_calculations')
+def saved_calculations():
+    calculations = CashFlowCalculation.query.order_by(CashFlowCalculation.created_at.desc()).all()
+    return render_template('saved_calculations.html', calculations=calculations)
+
+@main.route('/delete_calculation/<int:id>', methods=['POST'])
+def delete_calculation(id):
+    calculation = CashFlowCalculation.query.get_or_404(id)
+    db.session.delete(calculation)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@main.route('/property_comparison', methods=['GET', 'POST'])
+def property_comparison():
+    if request.method == 'POST':
+        new_property = PropertyComparison(
+            property_name=request.form['property_name'],
+            purchase_price=float(request.form['purchase_price']),
+            square_footage=float(request.form['square_footage']),
+            num_bedrooms=int(request.form['num_bedrooms']),
+            num_bathrooms=float(request.form['num_bathrooms']),
+            year_built=int(request.form['year_built']),
+            location=request.form['location'],
+            estimated_rent=float(request.form['estimated_rent'])
+        )
+        db.session.add(new_property)
+        db.session.commit()
+        return jsonify({'success': True, 'id': new_property.id})
+
+    properties = PropertyComparison.query.order_by(PropertyComparison.created_at.desc()).all()
+    return render_template('property_comparison.html', properties=properties)
+
+@main.route('/delete_property_comparison/<int:id>', methods=['POST'])
+def delete_property_comparison(id):
+    property_comparison = PropertyComparison.query.get_or_404(id)
+    db.session.delete(property_comparison)
+    db.session.commit()
+    return jsonify({'success': True})
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

@@ -12,8 +12,8 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    <nav class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white shadow-lg">
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen flex flex-col">
+    <nav class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold">Real Estate Investment Platform</h1>
             <div>
@@ -35,6 +35,20 @@
                 <p class="mt-2 text-sm text-gray-500">Note: This tool may be subject to API usage limits.</p>
             </div>
 
+            <!-- Cash Flow Calculator -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="text-xl font-semibold mb-4 text-blue-600">Cash Flow Calculator</h3>
+                <p class="mb-4 text-gray-600">Calculate and analyze cash flow for your real estate investments.</p>
+                <a href="{{ url_for('main.cash_flow_calculator') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300">Calculate Cash Flow</a>
+            </div>
+
+            <!-- Property Comparison Tool -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="text-xl font-semibold mb-4 text-blue-600">Property Comparison Tool</h3>
+                <p class="mb-4 text-gray-600">Compare multiple properties side by side to make informed decisions.</p>
+                <a href="{{ url_for('main.property_comparison') }}" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition duration-300">Compare Properties</a>
+            </div>
+
             <!-- Placeholder for future tools -->
             <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
                 <h3 class="text-xl font-semibold mb-4 text-blue-600">Coming Soon</h3>
@@ -43,7 +57,7 @@
         </div>
     </main>
 
-    <footer class="mt-auto bg-gray-800 text-white py-4">
+    <footer class="mt-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4">
         <div class="container mx-auto text-center">
             <p>&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
         </div>

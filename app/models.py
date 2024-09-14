@@ -93,3 +93,25 @@ class PropertyDescription(db.Model):
     description = db.Column(db.Text, nullable=False)
     image_paths = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class CashFlowCalculation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    property_name = db.Column(db.String(100), nullable=False)
+    purchase_price = db.Column(db.Float, nullable=False)
+    rental_income = db.Column(db.Float, nullable=False)
+    expenses = db.Column(db.Float, nullable=False)
+    mortgage_payment = db.Column(db.Float, nullable=False)
+    cash_flow = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class PropertyComparison(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    property_name = db.Column(db.String(100), nullable=False)
+    purchase_price = db.Column(db.Float, nullable=False)
+    square_footage = db.Column(db.Float, nullable=False)
+    num_bedrooms = db.Column(db.Integer, nullable=False)
+    num_bathrooms = db.Column(db.Float, nullable=False)
+    year_built = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    estimated_rent = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
