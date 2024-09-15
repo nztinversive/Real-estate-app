@@ -11,6 +11,7 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
@@ -50,15 +51,14 @@
                     <button type="submit" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300">Generate Description</button>
                 </form>
                 <div id="result" class="mt-6"></div>
+                <div id="uploaded-images" class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-8">
             <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Descriptions</h2>
-                <div id="generated-descriptions" class="space-y-4">
-                    <!-- Generated descriptions will be inserted here -->
-                </div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Property Descriptions</h2>
+                <div id="generated-descriptions" class="space-y-8"></div>
             </div>
         </div>
     </main>
@@ -72,55 +72,134 @@
     </footer>
 
     <script>
-        const fileUpload = document.getElementById('file-upload');
-        const fileList = document.getElementById('file-list');
         const uploadForm = document.getElementById('upload-form');
         const result = document.getElementById('result');
         const generatedDescriptions = document.getElementById('generated-descriptions');
-
-        fileUpload.addEventListener('change', function(e) {
-            fileList.innerHTML = '';
-            for (let file of this.files) {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'text-sm text-gray-600';
-                fileItem.textContent = `${file.name} - Ready for description generation`;
-                fileList.appendChild(fileItem);
-            }
-        });
+        const uploadedImages = document.getElementById('uploaded-images');
 
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
             result.innerHTML = '<p class="text-blue-500">Generating description... Please wait.</p>';
+            uploadedImages.innerHTML = '';
             var formData = new FormData(this);
-            fetch('{{ url_for("main.property_description_generator") }}', {
+            fetch('{{ url_for("main.property_description_generator", _external=True) }}', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'  // Change this line
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.error) {
                     result.innerHTML = `<p class="text-red-500">${data.error}</p>`;
                 } else {
                     result.innerHTML = `
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md">
+                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4">
                             <h3 class="text-lg font-semibold mb-2">Generated Description:</h3>
                             <p>${data.description}</p>
                         </div>
                     `;
                     
-                    const descriptionElement = document.createElement('div');
-                    descriptionElement.className = 'bg-gray-50 p-4 rounded-md';
-                    descriptionElement.innerHTML = `
-                        <h4 class="text-lg font-semibold mb-2">${new Date().toLocaleString()}</h4>
-                        <p>${data.description}</p>
-                    `;
-                    generatedDescriptions.prepend(descriptionElement);
+                    // Display uploaded images
+                    data.photo_info.forEach(photo => {
+                        const photoElement = document.createElement('div');
+                        photoElement.className = 'bg-white p-4 rounded-lg shadow';
+                        photoElement.innerHTML = `
+                            <img src="${photo.file_path}" alt="${photo.filename}" class="w-full h-48 object-cover rounded-lg mb-2">
+                            <p class="font-semibold text-sm">${photo.filename}</p>
+                            <p class="text-xs text-gray-500">${photo.tags.join(', ')}</p>
+                        `;
+                        uploadedImages.appendChild(photoElement);
+                    });
+
+                    saveDescription(data.description, data.photo_info);
+                    updateGeneratedDescriptions();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                result.innerHTML = '<p class="text-red-500">An error occurred. Please try again.</p>';
+                result.innerHTML = `<p class="text-red-500">An error occurred: ${error.message}</p>`;
             });
+        });
+
+        function saveDescription(description, photoInfo) {
+            try {
+                localforage.getItem('generatedDescriptions').then(function(descriptions) {
+                    if (!descriptions) {
+                        descriptions = [];
+                    }
+                    descriptions.unshift({
+                        date: new Date().toLocaleString(),
+                        description: description,
+                        photoInfo: photoInfo
+                    });
+                    return localforage.setItem('generatedDescriptions', descriptions);
+                }).catch(function(err) {
+                    console.error('Error saving description:', err);
+                });
+            } catch (error) {
+                console.error('Error accessing localforage:', error);
+            }
+        }
+
+        function updateGeneratedDescriptions() {
+            try {
+                localforage.getItem('generatedDescriptions').then(function(descriptions) {
+                    generatedDescriptions.innerHTML = '';
+                    if (descriptions && descriptions.length > 0) {
+                        descriptions.forEach(function(desc) {
+                            const descElement = document.createElement('div');
+                            descElement.className = 'bg-gray-50 p-4 rounded-md';
+                            descElement.innerHTML = `
+                                <h4 class="text-lg font-semibold mb-2">${desc.date}</h4>
+                                <p class="mb-4">${desc.description}</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                    ${desc.photoInfo && desc.photoInfo.map ? desc.photoInfo.map(photo => `
+                                        <div class="bg-white p-4 rounded-lg shadow">
+                                            <img src="${photo.file_path}" alt="${photo.filename}" class="w-full h-48 object-cover rounded-lg mb-2">
+                                            <p class="font-semibold text-sm">${photo.filename}</p>
+                                            <p class="text-xs text-gray-500">${photo.tags ? photo.tags.join(', ') : ''}</p>
+                                        </div>
+                                    `).join('') : ''}
+                                </div>
+                            `;
+                            generatedDescriptions.appendChild(descElement);
+                        });
+                    } else {
+                        generatedDescriptions.innerHTML = '<p>No descriptions generated yet.</p>';
+                    }
+                }).catch(function(err) {
+                    console.error('Error retrieving descriptions:', err);
+                    generatedDescriptions.innerHTML = '<p>Error loading descriptions.</p>';
+                });
+            } catch (error) {
+                console.error('Error accessing localforage:', error);
+                generatedDescriptions.innerHTML = '<p>Error loading descriptions.</p>';
+            }
+        }
+
+        // Add this function to handle file uploads
+        function handleFileUpload(event) {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+            const files = event.target.files;
+            for (let i = 0; i < files.length; i++) {
+                const li = document.createElement('li');
+                li.textContent = files[i].name;
+                fileList.appendChild(li);
+            }
+        }
+
+        // Add event listener for file input
+        document.getElementById('file-upload').addEventListener('change', handleFileUpload);
+
+        // Call updateGeneratedDescriptions only after DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGeneratedDescriptions();
         });
     </script>
 </body>

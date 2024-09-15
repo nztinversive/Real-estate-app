@@ -1,15 +1,18 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_file
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_file, send_from_directory
+from flask_cors import CORS  # Add this import
 from werkzeug.utils import secure_filename
 import os
-from .models import db, PropertyDescription, CashFlowCalculation, PropertyComparison, ROICalculation, Document
-from .document_processor import save_file, extract_text, generate_tags
+from .models import Document
+from .document_processor import save_file, extract_text_from_image, generate_tags, generate_property_description
 import json
 import base64
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from datetime import datetime
+from . import db
 
 main = Blueprint('main', __name__)
+CORS(main)  # Add this line to enable CORS for all routes in this blueprint
 
 # Initialize the OpenAI client with the provided API key
 client = OpenAI(api_key='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')
@@ -25,162 +28,50 @@ def dashboard():
 @main.route('/property_description_generator', methods=['GET', 'POST'])
 def property_description_generator():
     if request.method == 'POST':
-        # Handle POST request (file upload and description generation)
         if 'photos' not in request.files:
             return jsonify({'error': 'No photos provided'}), 400
 
         photos = request.files.getlist('photos')
         photo_descriptions = []
+        photo_info = []
 
         for photo in photos:
             if photo and allowed_file(photo.filename):
-                filename = secure_filename(photo.filename)
-                file_path = save_file(photo)
+                filename, file_path = save_file(photo)  # Unpack both returned values
                 
-                extracted_text = extract_text(file_path)
-                tags = generate_tags(extracted_text)
+                description = extract_text_from_image(file_path)  # Pass only the file_path
+                tags = generate_tags(description)
 
-                photo_descriptions.append({
+                photo_descriptions.append(description)
+                photo_info.append({
                     'filename': filename,
-                    'extracted_text': extracted_text,
+                    'file_path': url_for('main.uploaded_file', filename=filename, _external=True),
                     'tags': tags
                 })
 
         if not photo_descriptions:
             return jsonify({'error': 'No valid photos provided'}), 400
 
-        # Here you would typically use the OpenAI API to generate a description
-        # For now, we'll just return a placeholder
-        generated_description = "This is a placeholder for the generated property description."
+        combined_description = "\n".join(photo_descriptions)
+        property_description = generate_property_description(combined_description)
 
         return jsonify({
-            'description': generated_description,
-            'photo_descriptions': photo_descriptions
+            'description': property_description,
+            'photo_info': photo_info
         })
 
     return render_template('property_description_generator.html')
 
-@main.route('/saved_descriptions')
-def saved_descriptions():
-    descriptions = PropertyDescription.query.order_by(PropertyDescription.created_at.desc()).all()
-    return render_template('saved_descriptions.html', descriptions=descriptions)
-
-@main.route('/cash_flow_calculator', methods=['GET', 'POST'])
-def cash_flow_calculator():
-    if request.method == 'POST':
-        property_name = request.form.get('property_name')
-        purchase_price = float(request.form.get('purchase_price'))
-        rental_income = float(request.form.get('rental_income'))
-        expenses = float(request.form.get('expenses'))
-        mortgage_payment = float(request.form.get('mortgage_payment'))
-
-        cash_flow = rental_income - expenses - mortgage_payment
-
-        calculation = CashFlowCalculation(
-            property_name=property_name,
-            purchase_price=purchase_price,
-            rental_income=rental_income,
-            expenses=expenses,
-            mortgage_payment=mortgage_payment,
-            cash_flow=cash_flow
-        )
-        db.session.add(calculation)
-        db.session.commit()
-
-        return jsonify({
-            'cash_flow': cash_flow,
-            'id': calculation.id
-        })
-
-    return render_template('cash_flow_calculator.html')
-
-@main.route('/saved_calculations')
-def saved_calculations():
-    calculations = CashFlowCalculation.query.order_by(CashFlowCalculation.created_at.desc()).all()
-    return render_template('saved_calculations.html', calculations=calculations)
-
-@main.route('/delete_calculation/<int:id>', methods=['POST'])
-def delete_calculation(id):
-    calculation = CashFlowCalculation.query.get_or_404(id)
-    db.session.delete(calculation)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@main.route('/property_comparison', methods=['GET', 'POST'])
-def property_comparison():
-    if request.method == 'POST':
-        new_property = PropertyComparison(
-            property_name=request.form['property_name'],
-            purchase_price=float(request.form['purchase_price']),
-            square_footage=float(request.form['square_footage']),
-            num_bedrooms=int(request.form['num_bedrooms']),
-            num_bathrooms=float(request.form['num_bathrooms']),
-            year_built=int(request.form['year_built']),
-            location=request.form['location'],
-            estimated_rent=float(request.form['estimated_rent'])
-        )
-        db.session.add(new_property)
-        db.session.commit()
-        return jsonify({'success': True, 'id': new_property.id})
-
-    properties = PropertyComparison.query.order_by(PropertyComparison.created_at.desc()).all()
-    return render_template('property_comparison.html', properties=properties)
-
-@main.route('/delete_property_comparison/<int:id>', methods=['POST'])
-def delete_property_comparison(id):
-    property_comparison = PropertyComparison.query.get_or_404(id)
-    db.session.delete(property_comparison)
-    db.session.commit()
-    return jsonify({'success': True})
-
-@main.route('/roi_calculator', methods=['GET', 'POST'])
-def roi_calculator():
-    if request.method == 'POST':
-        purchase_price = float(request.form['purchase_price'])
-        closing_costs = float(request.form['closing_costs'])
-        rehab_costs = float(request.form['rehab_costs'])
-        annual_rental_income = float(request.form['annual_rental_income'])
-        annual_expenses = float(request.form['annual_expenses'])
-        appreciation_rate = float(request.form['appreciation_rate']) / 100
-        holding_period = int(request.form['holding_period'])
-
-        total_investment = purchase_price + closing_costs + rehab_costs
-        total_profit = 0
-        for year in range(holding_period):
-            annual_cash_flow = annual_rental_income - annual_expenses
-            appreciation = purchase_price * (1 + appreciation_rate) ** year - purchase_price
-            total_profit += annual_cash_flow + appreciation
-
-        roi = (total_profit / total_investment) * 100
-
-        new_calculation = ROICalculation(
-            property_name=request.form['property_name'],
-            purchase_price=purchase_price,
-            closing_costs=closing_costs,
-            rehab_costs=rehab_costs,
-            annual_rental_income=annual_rental_income,
-            annual_expenses=annual_expenses,
-            appreciation_rate=appreciation_rate * 100,
-            holding_period=holding_period,
-            roi=roi
-        )
-        db.session.add(new_calculation)
-        db.session.commit()
-
-        return jsonify({
-            'roi': roi,
-            'id': new_calculation.id
-        })
-
-    calculations = ROICalculation.query.order_by(ROICalculation.created_at.desc()).all()
-    return render_template('roi_calculator.html', calculations=calculations)
-
-@main.route('/delete_roi_calculation/<int:id>', methods=['POST'])
-def delete_roi_calculation(id):
-    calculation = ROICalculation.query.get_or_404(id)
-    db.session.delete(calculation)
-    db.session.commit()
-    return jsonify({'success': True})
+def generate_property_description(combined_description):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a professional real estate agent. Generate a compelling property description based on the following information."},
+            {"role": "user", "content": f"Generate a property description based on this information:\n\n{combined_description}"}
+        ]
+    )
+    
+    return response.choices[0].message.content.strip()
 
 @main.route('/document_organizer', methods=['GET', 'POST'])
 def document_organizer():
@@ -195,16 +86,19 @@ def document_organizer():
             filename = secure_filename(file.filename)
             file_path = save_file(file)
             
-            extracted_text = extract_text(file_path)
-            tags = generate_tags(extracted_text)
+            if file.content_type.startswith('image/'):
+                description = extract_text_from_image(file_path)
+                tags = generate_tags(description)
+            else:
+                description = ""
+                tags = []
 
             new_document = Document(
                 filename=filename,
                 file_path=file_path,
                 file_type=file.content_type,
-                extracted_text=extracted_text,
-                tags=json.dumps(tags),
-                property_id=None  # Set to None or get a property_id from the form if needed
+                extracted_text=description,
+                tags=', '.join(tags)
             )
             db.session.add(new_document)
             db.session.commit()
@@ -251,4 +145,30 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Comment out other routes for now
+@main.route('/cash_flow_calculator', methods=['GET', 'POST'])
+def cash_flow_calculator():
+    if request.method == 'POST':
+        # Process form data and calculate cash flow
+        # For now, we'll just return a dummy response
+        return jsonify({'cash_flow': 1000})
+    return render_template('cash_flow_calculator.html')
+
+@main.route('/roi_calculator', methods=['GET', 'POST'])
+def roi_calculator():
+    if request.method == 'POST':
+        # Process form data and calculate ROI
+        # For now, we'll just return a dummy response
+        return jsonify({'roi': 10})
+    return render_template('roi_calculator.html')
+
+@main.route('/property_comparison', methods=['GET', 'POST'])
+def property_comparison():
+    if request.method == 'POST':
+        # Process form data and compare properties
+        # For now, we'll just return a dummy response
+        return jsonify({'comparison': 'Property A is better'})
+    return render_template('property_comparison.html')
+
+@main.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
