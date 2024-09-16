@@ -6,9 +6,18 @@
     <title>Cash Flow Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+        }
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-in.active {
+            opacity: 1;
         }
     </style>
 </head>
@@ -30,9 +39,9 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Cash Flow Calculator</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Cash Flow Calculator</h1>
         
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Calculate Cash Flow</h2>
                 <form id="cash-flow-form" class="space-y-4">
@@ -62,11 +71,11 @@
                         <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">Calculate Cash Flow</button>
                     </div>
                 </form>
-                <div id="result" class="mt-6"></div>
+                <div id="result" class="mt-6 fade-in"></div>
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden" data-aos="fade-up" data-aos-delay="200">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Previous Calculations</h2>
                 <div class="overflow-x-auto">
@@ -109,6 +118,11 @@
     </footer>
 
     <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('cash-flow-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -126,6 +140,11 @@
                         </div>
                     `;
                     location.reload();  // Reload the page to show the new calculation in the table
+                    // Fade in results
+                    const resultElement = document.getElementById('result');
+                    if (resultElement.innerHTML.trim() !== '') {
+                        resultElement.classList.add('active');
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);

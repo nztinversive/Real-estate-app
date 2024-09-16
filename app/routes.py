@@ -1,21 +1,19 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_file, send_from_directory
-from flask_cors import CORS  # Add this import
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
-from .models import Document
+from .models import Document, PropertyData, MarketTrend, AnalyzedDeal
 from .document_processor import save_file, extract_text_from_image, generate_tags, generate_property_description
 import json
 import base64
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from datetime import datetime
+from datetime import datetime, date
 from . import db
+from .ml_model import predict
 
 main = Blueprint('main', __name__)
-CORS(main)  # Add this line to enable CORS for all routes in this blueprint
-
-# Initialize the OpenAI client with the provided API key
-client = OpenAI(api_key='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')
+CORS(main)
 
 @main.route('/')
 def index():
@@ -37,9 +35,9 @@ def property_description_generator():
 
         for photo in photos:
             if photo and allowed_file(photo.filename):
-                filename, file_path = save_file(photo)  # Unpack both returned values
+                filename, file_path = save_file(photo)
                 
-                description = extract_text_from_image(file_path)  # Pass only the file_path
+                description = extract_text_from_image(file_path)
                 tags = generate_tags(description)
 
                 photo_descriptions.append(description)
@@ -172,3 +170,150 @@ def property_comparison():
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+
+@main.route('/deal_analyzer', methods=['GET', 'POST'])
+def deal_analyzer():
+    if request.method == 'POST':
+        try:
+            # Get form data
+            purchase_price = float(request.form.get('purchase_price', 0))
+            down_payment = float(request.form.get('down_payment', 0))
+            interest_rate = float(request.form.get('interest_rate', 0)) / 100
+            monthly_rental_income = float(request.form.get('monthly_rental_income', 0))
+            monthly_operating_expenses = float(request.form.get('monthly_operating_expenses', 0))
+            vacancy_rate = float(request.form.get('vacancy_rate', 0)) / 100
+
+            # Calculations
+            loan_amount = purchase_price - down_payment
+            annual_rental_income = monthly_rental_income * 12 * (1 - vacancy_rate)
+            annual_operating_expenses = monthly_operating_expenses * 12
+            net_operating_income = annual_rental_income - annual_operating_expenses
+            annual_debt_service = loan_amount * interest_rate  # Simplified calculation
+            annual_cash_flow = net_operating_income - annual_debt_service
+            total_investment = down_payment
+            roi = (annual_cash_flow / total_investment) * 100 if total_investment else 0
+            cap_rate = (net_operating_income / purchase_price) * 100 if purchase_price else 0
+            cash_on_cash_return = roi
+
+            # Use ML model to predict cash flow
+            market_trend = MarketTrend.query.order_by(MarketTrend.date.desc()).first()
+            if not market_trend:
+                raise ValueError("No market trend data available.")
+            
+            input_features = [
+                purchase_price,
+                monthly_rental_income,
+                monthly_operating_expenses,
+                vacancy_rate,
+                market_trend.median_home_price,
+                market_trend.rental_rate,
+                market_trend.unemployment_rate
+            ]
+            predicted_cash_flow = predict(input_features)
+
+            # Save the analyzed deal
+            new_deal = AnalyzedDeal(
+                purchase_price=purchase_price,
+                down_payment=down_payment,
+                interest_rate=interest_rate * 100,  # Store as percentage
+                monthly_rental_income=monthly_rental_income,
+                monthly_operating_expenses=monthly_operating_expenses,
+                vacancy_rate=vacancy_rate * 100,  # Store as percentage
+                roi=roi,
+                cap_rate=cap_rate,
+                cash_on_cash_return=cash_on_cash_return,
+                annual_cash_flow=annual_cash_flow,
+                predicted_cash_flow=predicted_cash_flow
+            )
+            db.session.add(new_deal)
+            db.session.commit()
+
+            # Render results with visualization
+            return render_template('deal_analyzer.html', 
+                                   results=new_deal.to_dict(),
+                                   saved_deals=get_saved_deals())
+        except Exception as e:
+            return render_template('deal_analyzer.html', error=str(e), saved_deals=get_saved_deals())
+    return render_template('deal_analyzer.html', saved_deals=get_saved_deals())
+
+def get_saved_deals():
+    return [deal.to_dict() for deal in AnalyzedDeal.query.order_by(AnalyzedDeal.analysis_date.desc()).limit(5)]
+
+@main.route('/api/saved_deals', methods=['GET'])
+def api_saved_deals():
+    return jsonify(get_saved_deals())
+
+@main.route('/populate_sample_data')
+def populate_sample_data():
+    from .ml_model import predict  # Ensure all imports are correct
+    # Sample Property Data
+    if not PropertyData.query.first():
+        sample_properties = [
+            PropertyData(
+                address="123 Maple Street",
+                purchase_price=250000,
+                rental_income=2000,
+                operating_expenses=800,
+                vacancy_rate=0.05,
+                purchase_date=date(2022, 1, 15)
+            ),
+            PropertyData(
+                address="456 Oak Avenue",
+                purchase_price=350000,
+                rental_income=2500,
+                operating_expenses=900,
+                vacancy_rate=0.04,
+                purchase_date=date(2021, 6, 10)
+            ),
+            # Add more sample properties as needed
+        ]
+        db.session.add_all(sample_properties)
+        db.session.commit()
+
+    # Sample Market Trends
+    if not MarketTrend.query.first():
+        sample_trends = [
+            MarketTrend(
+                date=date(2023, 1, 1),
+                median_home_price=300000,
+                rental_rate=2.5,
+                unemployment_rate=5.0
+            ),
+            MarketTrend(
+                date=date(2023, 6, 1),
+                median_home_price=310000,
+                rental_rate=2.6,
+                unemployment_rate=4.8
+            ),
+            # Add more sample trends as needed
+        ]
+        db.session.add_all(sample_trends)
+        db.session.commit()
+
+    return jsonify({'message': 'Sample data populated successfully.'}), 200
+
+@main.route('/api/predict_cash_flow', methods=['POST'])
+def predict_cash_flow():
+    data = request.json
+    purchase_price = data.get('purchase_price')
+    rental_income = data.get('rental_income')
+    operating_expenses = data.get('operating_expenses')
+    vacancy_rate = data.get('vacancy_rate') / 100
+    median_home_price = data.get('median_home_price')
+    rental_rate = data.get('rental_rate')
+    unemployment_rate = data.get('unemployment_rate')
+
+    input_features = [
+        purchase_price,
+        rental_income,
+        operating_expenses,
+        vacancy_rate,
+        median_home_price,
+        rental_rate,
+        unemployment_rate
+    ]
+
+    prediction = predict(input_features)
+
+    return jsonify({'predicted_cash_flow': prediction}), 200
+

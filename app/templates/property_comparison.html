@@ -6,9 +6,18 @@
     <title>Property Comparison</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+        }
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-in.active {
+            opacity: 1;
         }
     </style>
 </head>
@@ -30,45 +39,43 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Property Comparison</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Property Comparison</h1>
         
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Add Property for Comparison</h2>
                 <form id="property-comparison-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label for="property_name" class="block text-sm font-medium text-gray-700">Property Name</label>
-                            <input type="text" id="property_name" name="property_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="purchase_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
-                            <input type="number" id="purchase_price" name="purchase_price" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="square_footage" class="block text-sm font-medium text-gray-700">Square Footage</label>
-                            <input type="number" id="square_footage" name="square_footage" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="num_bedrooms" class="block text-sm font-medium text-gray-700">Number of Bedrooms</label>
-                            <input type="number" id="num_bedrooms" name="num_bedrooms" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="num_bathrooms" class="block text-sm font-medium text-gray-700">Number of Bathrooms</label>
-                            <input type="number" id="num_bathrooms" name="num_bathrooms" step="0.5" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="year_built" class="block text-sm font-medium text-gray-700">Year Built</label>
-                            <input type="number" id="year_built" name="year_built" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
-                            <input type="text" id="location" name="location" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="estimated_rent" class="block text-sm font-medium text-gray-700">Estimated Monthly Rent ($)</label>
-                            <input type="number" id="estimated_rent" name="estimated_rent" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
+                    <div>
+                        <label for="property_name" class="block text-sm font-medium text-gray-700">Property Name</label>
+                        <input type="text" id="property_name" name="property_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="purchase_price" class="block text-sm font-medium text-gray-700">Purchase Price</label>
+                        <input type="number" id="purchase_price" name="purchase_price" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="square_footage" class="block text-sm font-medium text-gray-700">Square Footage</label>
+                        <input type="number" id="square_footage" name="square_footage" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="num_bedrooms" class="block text-sm font-medium text-gray-700">Number of Bedrooms</label>
+                        <input type="number" id="num_bedrooms" name="num_bedrooms" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="num_bathrooms" class="block text-sm font-medium text-gray-700">Number of Bathrooms</label>
+                        <input type="number" id="num_bathrooms" name="num_bathrooms" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="year_built" class="block text-sm font-medium text-gray-700">Year Built</label>
+                        <input type="number" id="year_built" name="year_built" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" id="location" name="location" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="estimated_rent" class="block text-sm font-medium text-gray-700">Estimated Rent</label>
+                        <input type="number" id="estimated_rent" name="estimated_rent" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     </div>
                     <div class="mt-6">
                         <button type="submit" class="w-full bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50">Add Property</button>
@@ -77,7 +84,7 @@
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden" data-aos="fade-up" data-aos-delay="200">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Property Comparison</h2>
                 <div class="overflow-x-auto">
@@ -127,6 +134,11 @@
     </footer>
 
     <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+
         document.getElementById('property-comparison-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);

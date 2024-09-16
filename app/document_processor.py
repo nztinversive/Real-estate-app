@@ -9,8 +9,6 @@ UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-client = OpenAI(api_key='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')
-
 def save_file(file):
     filename = secure_filename(file.filename)
     upload_folder = current_app.config.get('UPLOAD_FOLDER')
@@ -23,6 +21,10 @@ def save_file(file):
     return filename, file_path  # Return both the filename and the full file path
 
 def extract_text_from_image(image_path):
+    from openai import OpenAI  # {{ edit_1 }}
+    from flask import current_app  # Ensure current_app is imported
+
+    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
     with open(image_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -47,6 +49,10 @@ def extract_text_from_image(image_path):
     return response.choices[0].message.content.strip()
 
 def generate_tags(text):
+    from openai import OpenAI  # {{ edit_2 }}
+    from flask import current_app  # Ensure current_app is imported
+
+    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -59,6 +65,7 @@ def generate_tags(text):
     return tags[:10]  # Ensure we return at most 10 tags
 
 def generate_property_description(combined_description):
+    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -66,5 +73,4 @@ def generate_property_description(combined_description):
             {"role": "user", "content": f"Generate a property description based on this information:\n\n{combined_description}"}
         ]
     )
-    
     return response.choices[0].message.content.strip()

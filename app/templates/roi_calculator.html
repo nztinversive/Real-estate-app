@@ -6,9 +6,18 @@
     <title>ROI Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+        }
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-in.active {
+            opacity: 1;
         }
     </style>
 </head>
@@ -30,28 +39,16 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">ROI Calculator</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">ROI Calculator</h1>
         
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Calculate ROI</h2>
                 <form id="roi-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label for="property_name" class="block text-sm font-medium text-gray-700">Property Name</label>
-                            <input type="text" id="property_name" name="property_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="purchase_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
                             <input type="number" id="purchase_price" name="purchase_price" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="closing_costs" class="block text-sm font-medium text-gray-700">Closing Costs ($)</label>
-                            <input type="number" id="closing_costs" name="closing_costs" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="rehab_costs" class="block text-sm font-medium text-gray-700">Rehab Costs ($)</label>
-                            <input type="number" id="rehab_costs" name="rehab_costs" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
                         <div>
                             <label for="annual_rental_income" class="block text-sm font-medium text-gray-700">Annual Rental Income ($)</label>
@@ -62,46 +59,42 @@
                             <input type="number" id="annual_expenses" name="annual_expenses" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
                         <div>
-                            <label for="appreciation_rate" class="block text-sm font-medium text-gray-700">Appreciation Rate (%)</label>
-                            <input type="number" id="appreciation_rate" name="appreciation_rate" step="0.1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="holding_period" class="block text-sm font-medium text-gray-700">Holding Period (years)</label>
-                            <input type="number" id="holding_period" name="holding_period" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="property_value_change" class="block text-sm font-medium text-gray-700">Property Value Change (%)</label>
+                            <input type="number" id="property_value_change" name="property_value_change" step="0.1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
                     </div>
                     <div class="mt-6">
-                        <button type="submit" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Calculate ROI</button>
+                        <button type="submit" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-300">Calculate ROI</button>
                     </div>
                 </form>
-                <div id="result" class="mt-6"></div>
+                <div id="result" class="mt-6 fade-in"></div>
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden" data-aos="fade-up" data-aos-delay="200">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Previous Calculations</h2>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purchase Price</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Annual Rental Income</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Annual Expenses</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property Value Change</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated On</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            {% for calculation in calculations %}
+                            {% for calc in previous_calculations %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ calculation.property_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ "%.2f"|format(calculation.purchase_price) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ "%.2f"|format(calculation.roi) }}%</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ calculation.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button onclick="deleteCalculation({{ calculation.id }})" class="text-red-600 hover:text-red-900">Delete</button>
-                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ calc.date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ calc.purchase_price }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ calc.annual_rental_income }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ calc.annual_expenses }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ calc.property_value_change }}%</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ calc.roi }}%</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -111,7 +104,7 @@
         </div>
     </main>
 
-    <footer class="bg-white">
+    <footer class="bg-white mt-auto">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-gray-500 text-sm">
                 &copy; 2024 Real Estate Investment Platform. All rights reserved.
@@ -120,39 +113,55 @@
     </footer>
 
     <script>
-        document.getElementById('roi-form').addEventListener('submit', function(e) {
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+
+        const roiForm = document.getElementById('roi-form');
+        const result = document.getElementById('result');
+
+        roiForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
-            fetch('{{ url_for("main.roi_calculator") }}', {
+            result.innerHTML = '<p class="text-blue-500">Calculating ROI... Please wait.</p>';
+            var formData = new FormData(this);
+            fetch('{{ url_for("main.roi_calculator", _external=True) }}', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                document.getElementById('result').innerHTML = `
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
-                        <p class="font-bold">ROI:</p>
-                        <p>${data.roi.toFixed(2)}%</p>
-                    </div>
-                `;
+                if (data.error) {
+                    result.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                } else {
+                    result.innerHTML = `
+                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4">
+                            <h3 class="text-lg font-semibold mb-2">ROI:</h3>
+                            <p>${data.roi}%</p>
+                        </div>
+                    `;
+                    result.classList.add('active');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                result.innerHTML = `<p class="text-red-500">An error occurred: ${error.message}</p>`;
             });
         });
 
-        function deleteCalculation(id) {
-            if (confirm('Are you sure you want to delete this calculation?')) {
-                fetch(`{{ url_for('main.roi_calculator') }}/${id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Failed to delete calculation.');
-                    }
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fade in results
+            const resultElement = document.getElementById('result');
+            if (resultElement.innerHTML.trim() !== '') {
+                resultElement.classList.add('active');
             }
-        }
+        });
     </script>
 </body>
 </html>

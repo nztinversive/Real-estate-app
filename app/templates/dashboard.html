@@ -7,9 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+        }
+        .tool-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -25,6 +35,7 @@
                         <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Dashboard</a>
                         <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Profile</a>
                         <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Settings</a>
+                        <a href="{{ url_for('main.deal_analyzer') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Deal Analyzer</a>
                     </div>
                 </div>
                 <div>
@@ -35,10 +46,10 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Investment Tools</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Investment Tools</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Property Description Generator -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="100">
                 <div class="p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
@@ -60,7 +71,7 @@
             </div>
 
             <!-- Cash Flow Calculator -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="200">
                 <div class="p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
@@ -82,12 +93,12 @@
             </div>
 
             <!-- ROI Calculator -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="300">
                 <div class="p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
                             <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
                         <div class="ml-4">
@@ -104,7 +115,7 @@
             </div>
 
             <!-- Property Comparison -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="400">
                 <div class="p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
@@ -126,7 +137,7 @@
             </div>
 
             <!-- Document Organizer -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="500">
                 <div class="p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
@@ -146,6 +157,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Deal Analyzer -->
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="600">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <!-- Deal Analyzer Icon -->
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 7l7 7-7 7M21 7l-7 7 7 7" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Deal Analyzer</h2>
+                            <p class="mt-1 text-sm text-gray-500">Analyze real estate deals with advanced metrics and predictions.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.deal_analyzer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Analyze Deal
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -156,5 +190,12 @@
             </p>
         </div>
     </footer>
+
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+    </script>
 </body>
 </html>

@@ -6,12 +6,21 @@
     <title>Property Description Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-in.active {
+            opacity: 1;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
@@ -31,9 +40,9 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Property Description Generator</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Property Description Generator</h1>
         
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Upload Property Photos</h2>
                 <form id="upload-form" enctype="multipart/form-data" class="space-y-4">
@@ -50,12 +59,12 @@
                     <div id="file-list" class="mt-4"></div>
                     <button type="submit" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300">Generate Description</button>
                 </form>
-                <div id="result" class="mt-6"></div>
+                <div id="result" class="mt-6 fade-in"></div>
                 <div id="uploaded-images" class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-8" data-aos="fade-up" data-aos-delay="200">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Property Descriptions</h2>
                 <div id="generated-descriptions" class="space-y-8"></div>
@@ -72,6 +81,11 @@
     </footer>
 
     <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+
         const uploadForm = document.getElementById('upload-form');
         const result = document.getElementById('result');
         const generatedDescriptions = document.getElementById('generated-descriptions');
@@ -85,7 +99,7 @@
             fetch('{{ url_for("main.property_description_generator", _external=True) }}', {
                 method: 'POST',
                 body: formData,
-                credentials: 'include'  // Change this line
+                credentials: 'include'
             })
             .then(response => {
                 if (!response.ok) {
