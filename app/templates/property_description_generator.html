@@ -3,80 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Description Generator</title>
+    <title>Syndication Tool - Real Estate Investment Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-        }
-        .fade-in {
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .fade-in.active {
-            opacity: 1;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{{ url_for('main.dashboard') }}" class="flex-shrink-0">
-                        <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
-                    </a>
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
-                        <a href="{{ url_for('main.property_description_generator') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Description Generator</a>
-                    </div>
-                </div>
-            </div>
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold flex items-center">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-8 w-8 mr-2">
+                Syndication Tool
+            </a>
+            <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white">Back to Dashboard</a>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Property Description Generator</h1>
-        
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
-            <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Upload Property Photos</h2>
-                <form id="upload-form" enctype="multipart/form-data" class="space-y-4">
-                    <div class="flex items-center justify-center w-full">
-                        <label for="file-upload" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p class="text-xs text-gray-500">PNG, JPG, JPEG or GIF (MAX. 800x400px)</p>
-                            </div>
-                            <input id="file-upload" name="photos" type="file" class="hidden" multiple accept="image/*" />
-                        </label>
-                    </div>
-                    <div id="file-list" class="mt-4"></div>
-                    <button type="submit" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300">Generate Description</button>
-                </form>
-                <div id="result" class="mt-6 fade-in"></div>
-                <div id="uploaded-images" class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="mb-4">
+              {% for message in messages %}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-2" role="alert">
+                  {{ message }}
+                </div>
+              {% endfor %}
             </div>
-        </div>
+          {% endif %}
+        {% endwith %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Active Deals Section -->
+            <div data-aos="fade-right">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Active Syndication Deals</h2>
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                    <h3 class="text-xl font-semibold mb-2">Example Active Deal</h3>
+                    <p class="text-gray-600 mb-4">This is an example of an active syndication deal. Real deals will be displayed here.</p>
+                    <p class="mb-2"><strong>Target Amount:</strong> $1,000,000</p>
+                    <p class="mb-2"><strong>Current Amount:</strong> $750,000</p>
+                    <p class="mb-4"><strong>Progress:</strong> 75%</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                    </div>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</button>
+                </div>
+                
+                <!-- List of actual deals -->
+                {% for deal in deals %}
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <h3 class="text-xl font-semibold mb-2">{{ deal.title }}</h3>
+                    <p class="text-gray-600 mb-4">{{ deal.description[:100] }}...</p>
+                    <p class="mb-2"><strong>Target Amount:</strong> ${{ "%.2f"|format(deal.target_amount) }}</p>
+                    <p class="mb-2"><strong>Current Amount:</strong> ${{ "%.2f"|format(deal.current_amount) }}</p>
+                    <p class="mb-4"><strong>Progress:</strong> {{ "%.2f"|format(deal.current_amount / deal.target_amount * 100) }}%</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ deal.current_amount / deal.target_amount * 100 }}%"></div>
+                    </div>
+                    <a href="{{ url_for('syndication.view_deal', deal_id=deal.id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</a>
+                </div>
+                {% endfor %}
+            </div>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-8" data-aos="fade-up" data-aos-delay="200">
-            <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Property Descriptions</h2>
-                <div id="generated-descriptions" class="space-y-8"></div>
+            <!-- Create New Deal Section -->
+            <div data-aos="fade-left">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Create New Syndication Deal</h2>
+                <form method="POST" action="{{ url_for('syndication.create_deal') }}" class="bg-white rounded-lg shadow-md p-6">
+                    <div class="mb-4">
+                        <label for="title" class="block text-gray-700 font-bold mb-2">Deal Title</label>
+                        <input type="text" id="title" name="title" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
+                        <textarea id="description" name="description" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" rows="4"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="target_amount" class="block text-gray-700 font-bold mb-2">Target Amount ($)</label>
+                        <input type="number" id="target_amount" name="target_amount" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">Create Deal</button>
+                </form>
             </div>
         </div>
     </main>
 
     <footer class="bg-white mt-auto">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-500 text-sm">
-                &copy; 2024 Real Estate Investment Platform. All rights reserved.
-            </p>
+        <div class="container mx-auto py-6 px-4">
+            <p class="text-center text-gray-600">&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
         </div>
     </footer>
 
@@ -84,136 +102,6 @@
         AOS.init({
             duration: 800,
             once: true,
-        });
-
-        const uploadForm = document.getElementById('upload-form');
-        const result = document.getElementById('result');
-        const generatedDescriptions = document.getElementById('generated-descriptions');
-        const uploadedImages = document.getElementById('uploaded-images');
-
-        uploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            result.innerHTML = '<p class="text-blue-500">Generating description... Please wait.</p>';
-            uploadedImages.innerHTML = '';
-            var formData = new FormData(this);
-            fetch('{{ url_for("main.property_description_generator", _external=True) }}', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    result.innerHTML = `<p class="text-red-500">${data.error}</p>`;
-                } else {
-                    result.innerHTML = `
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4">
-                            <h3 class="text-lg font-semibold mb-2">Generated Description:</h3>
-                            <p>${data.description}</p>
-                        </div>
-                    `;
-                    
-                    // Display uploaded images
-                    data.photo_info.forEach(photo => {
-                        const photoElement = document.createElement('div');
-                        photoElement.className = 'bg-white p-4 rounded-lg shadow';
-                        photoElement.innerHTML = `
-                            <img src="${photo.file_path}" alt="${photo.filename}" class="w-full h-48 object-cover rounded-lg mb-2">
-                            <p class="font-semibold text-sm">${photo.filename}</p>
-                            <p class="text-xs text-gray-500">${photo.tags.join(', ')}</p>
-                        `;
-                        uploadedImages.appendChild(photoElement);
-                    });
-
-                    saveDescription(data.description, data.photo_info);
-                    updateGeneratedDescriptions();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                result.innerHTML = `<p class="text-red-500">An error occurred: ${error.message}</p>`;
-            });
-        });
-
-        function saveDescription(description, photoInfo) {
-            try {
-                localforage.getItem('generatedDescriptions').then(function(descriptions) {
-                    if (!descriptions) {
-                        descriptions = [];
-                    }
-                    descriptions.unshift({
-                        date: new Date().toLocaleString(),
-                        description: description,
-                        photoInfo: photoInfo
-                    });
-                    return localforage.setItem('generatedDescriptions', descriptions);
-                }).catch(function(err) {
-                    console.error('Error saving description:', err);
-                });
-            } catch (error) {
-                console.error('Error accessing localforage:', error);
-            }
-        }
-
-        function updateGeneratedDescriptions() {
-            try {
-                localforage.getItem('generatedDescriptions').then(function(descriptions) {
-                    generatedDescriptions.innerHTML = '';
-                    if (descriptions && descriptions.length > 0) {
-                        descriptions.forEach(function(desc) {
-                            const descElement = document.createElement('div');
-                            descElement.className = 'bg-gray-50 p-4 rounded-md';
-                            descElement.innerHTML = `
-                                <h4 class="text-lg font-semibold mb-2">${desc.date}</h4>
-                                <p class="mb-4">${desc.description}</p>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    ${desc.photoInfo && desc.photoInfo.map ? desc.photoInfo.map(photo => `
-                                        <div class="bg-white p-4 rounded-lg shadow">
-                                            <img src="${photo.file_path}" alt="${photo.filename}" class="w-full h-48 object-cover rounded-lg mb-2">
-                                            <p class="font-semibold text-sm">${photo.filename}</p>
-                                            <p class="text-xs text-gray-500">${photo.tags ? photo.tags.join(', ') : ''}</p>
-                                        </div>
-                                    `).join('') : ''}
-                                </div>
-                            `;
-                            generatedDescriptions.appendChild(descElement);
-                        });
-                    } else {
-                        generatedDescriptions.innerHTML = '<p>No descriptions generated yet.</p>';
-                    }
-                }).catch(function(err) {
-                    console.error('Error retrieving descriptions:', err);
-                    generatedDescriptions.innerHTML = '<p>Error loading descriptions.</p>';
-                });
-            } catch (error) {
-                console.error('Error accessing localforage:', error);
-                generatedDescriptions.innerHTML = '<p>Error loading descriptions.</p>';
-            }
-        }
-
-        // Add this function to handle file uploads
-        function handleFileUpload(event) {
-            const fileList = document.getElementById('file-list');
-            fileList.innerHTML = '';
-            const files = event.target.files;
-            for (let i = 0; i < files.length; i++) {
-                const li = document.createElement('li');
-                li.textContent = files[i].name;
-                fileList.appendChild(li);
-            }
-        }
-
-        // Add event listener for file input
-        document.getElementById('file-upload').addEventListener('change', handleFileUpload);
-
-        // Call updateGeneratedDescriptions only after DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            updateGeneratedDescriptions();
         });
     </script>
 </body>

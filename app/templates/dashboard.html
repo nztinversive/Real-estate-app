@@ -164,7 +164,6 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
                             <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <!-- Deal Analyzer Icon -->
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 7l7 7-7 7M21 7l-7 7 7 7" />
                             </svg>
                         </div>
@@ -176,6 +175,28 @@
                     <div class="mt-4">
                         <a href="{{ url_for('main.deal_analyzer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Analyze Deal
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Syndication Tool -->
+            <div class="tool-card bg-white overflow-hidden shadow-lg rounded-lg" data-aos="fade-up" data-aos-delay="700">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-pink-500 rounded-md p-3">
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-lg font-medium text-gray-900">Syndication Tool</h2>
+                            <p class="mt-1 text-sm text-gray-500">Manage and track real estate syndication deals.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.syndication_tool') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-pink-700 bg-pink-100 hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                            Manage Syndications
                         </a>
                     </div>
                 </div>

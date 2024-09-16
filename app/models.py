@@ -1,5 +1,7 @@
 from . import db
-from datetime import datetime, date  # {{ edit_1 }} Import 'date'
+from datetime import datetime, date
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +16,6 @@ class Document(db.Model):
     def __repr__(self):
         return f'<Document {self.filename}>'
 
-# Add PropertyData model
 class PropertyData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     property_name = db.Column(db.String(255), nullable=False)
@@ -23,7 +24,7 @@ class PropertyData(db.Model):
     rental_income = db.Column(db.Float, nullable=False)
     operating_expenses = db.Column(db.Float, nullable=False)
     vacancy_rate = db.Column(db.Float, nullable=True)
-    purchase_date = db.Column(db.Date, nullable=False, default=date.today)  # {{ edit_2 }}
+    purchase_date = db.Column(db.Date, nullable=False, default=date.today)
     square_footage = db.Column(db.Integer, nullable=False)
     num_bedrooms = db.Column(db.Integer, nullable=False)
     num_bathrooms = db.Column(db.Float, nullable=False)
@@ -34,16 +35,13 @@ class PropertyData(db.Model):
     def __repr__(self):
         return f'<PropertyData {self.property_name}>'
 
-# Add MarketTrend model
 class MarketTrend(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, default=date.today)
     median_home_price = db.Column(db.Float, nullable=False)
     rental_rate = db.Column(db.Float, nullable=False)
     unemployment_rate = db.Column(db.Float, nullable=True)
-    # Add more fields as needed
 
-# Add AnalyzedDeal model
 class AnalyzedDeal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     purchase_price = db.Column(db.Float, nullable=False)
@@ -75,3 +73,48 @@ class AnalyzedDeal(db.Model):
             'predicted_cash_flow': self.predicted_cash_flow,
             'analysis_date': self.analysis_date.isoformat()
         }
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    is_admin = db.Column(db.Boolean, default=False)
+    investments = db.relationship('Investment', backref='investor', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Deal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    target_amount = db.Column(db.Float, nullable=False)
+    current_amount = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    investments = db.relationship('Investment', backref='deal', lazy=True)
+
+class Investment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    deal_id = db.Column(db.Integer, db.ForeignKey('deal.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+class DealDocument(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    deal_id = db.Column(db.Integer, db.ForeignKey('deal.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    deal_id = db.Column(db.Integer, db.ForeignKey('deal.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)

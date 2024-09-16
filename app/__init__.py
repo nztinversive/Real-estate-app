@@ -32,7 +32,10 @@ def create_app():
                                    'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     with app.app_context():
-        from . import routes
-        app.register_blueprint(routes.main)
+        from .routes import main as main_blueprint
+        app.register_blueprint(main_blueprint)
+
+        from .syndication import syndication as syndication_blueprint
+        app.register_blueprint(syndication_blueprint, url_prefix='/syndication')
     
     return app

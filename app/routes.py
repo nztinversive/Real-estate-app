@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
-from .models import Document, PropertyData, MarketTrend, AnalyzedDeal
+from .models import Document, PropertyData, MarketTrend, AnalyzedDeal, Deal, Investment, User
 from .document_processor import save_file, extract_text_from_image, generate_tags, generate_property_description
 import json
 import base64
@@ -11,6 +11,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from datetime import datetime, date
 from . import db
 from .ml_model import predict
+from .syndication import syndication as syndication_blueprint
 
 main = Blueprint('main', __name__)
 CORS(main)
@@ -317,3 +318,6 @@ def predict_cash_flow():
 
     return jsonify({'predicted_cash_flow': prediction}), 200
 
+@main.route('/syndication_tool')
+def syndication_tool():
+    return redirect(url_for('syndication.syndication_dashboard'))
