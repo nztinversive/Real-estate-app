@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syndication Tool - Real Estate Investment Platform</title>
+    <title>Cash Flow Calculator - Real Estate Investment Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -16,85 +18,76 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold flex items-center">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-8 w-8 mr-2">
-                Syndication Tool
-            </a>
-            <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white">Back to Dashboard</a>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('dashboard') }}" class="flex-shrink-0">
+                        <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                    </a>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
+                        <a href="{{ url_for('cash_flow_calculator') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Cash Flow Calculator</a>
+                    </div>
+                </div>
+                <div>
+                    <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="mb-4">
-              {% for message in messages %}
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-2" role="alert">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Cash Flow Calculator</h1>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Active Deals Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Form -->
             <div data-aos="fade-right">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Active Syndication Deals</h2>
-                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
-                    <h3 class="text-xl font-semibold mb-2">Example Active Deal</h3>
-                    <p class="text-gray-600 mb-4">This is an example of an active syndication deal. Real deals will be displayed here.</p>
-                    <p class="mb-2"><strong>Target Amount:</strong> $1,000,000</p>
-                    <p class="mb-2"><strong>Current Amount:</strong> $750,000</p>
-                    <p class="mb-4"><strong>Progress:</strong> 75%</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                <form id="cashFlowForm" class="bg-white shadow-lg rounded-lg p-6 space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Input Property Details</h2>
+                    <div>
+                        <label for="purchase_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
+                        <input type="number" name="purchase_price" id="purchase_price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" required>
                     </div>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</button>
-                </div>
-                
-                <!-- List of actual deals -->
-                {% for deal in deals %}
-                <div class="bg-white rounded-lg shadow-md p-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                    <h3 class="text-xl font-semibold mb-2">{{ deal.title }}</h3>
-                    <p class="text-gray-600 mb-4">{{ deal.description[:100] }}...</p>
-                    <p class="mb-2"><strong>Target Amount:</strong> ${{ "%.2f"|format(deal.target_amount) }}</p>
-                    <p class="mb-2"><strong>Current Amount:</strong> ${{ "%.2f"|format(deal.current_amount) }}</p>
-                    <p class="mb-4"><strong>Progress:</strong> {{ "%.2f"|format(deal.current_amount / deal.target_amount * 100) }}%</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ deal.current_amount / deal.target_amount * 100 }}%"></div>
+                    <div>
+                        <label for="monthly_rent" class="block text-sm font-medium text-gray-700">Monthly Rent ($)</label>
+                        <input type="number" name="monthly_rent" id="monthly_rent" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" required>
                     </div>
-                    <a href="{{ url_for('syndication.view_deal', deal_id=deal.id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</a>
-                </div>
-                {% endfor %}
+                    <div>
+                        <label for="monthly_expenses" class="block text-sm font-medium text-gray-700">Monthly Expenses ($)</label>
+                        <input type="number" name="monthly_expenses" id="monthly_expenses" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+                    <div>
+                        <label for="vacancy_rate" class="block text-sm font-medium text-gray-700">Vacancy Rate (%)</label>
+                        <input type="number" name="vacancy_rate" id="vacancy_rate" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" value="5" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                        Calculate Cash Flow
+                    </button>
+                </form>
             </div>
 
-            <!-- Create New Deal Section -->
-            <div data-aos="fade-left">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Create New Syndication Deal</h2>
-                <form method="POST" action="{{ url_for('syndication.create_deal') }}" class="bg-white rounded-lg shadow-md p-6">
-                    <div class="mb-4">
-                        <label for="title" class="block text-gray-700 font-bold mb-2">Deal Title</label>
-                        <input type="text" id="title" name="title" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
-                    </div>
-                    <div class="mb-4">
-                        <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
-                        <textarea id="description" name="description" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" rows="4"></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label for="target_amount" class="block text-gray-700 font-bold mb-2">Target Amount ($)</label>
-                        <input type="number" id="target_amount" name="target_amount" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
-                    </div>
-                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">Create Deal</button>
-                </form>
+            <!-- Results -->
+            <div class="space-y-8" data-aos="fade-left">
+                <div id="results" class="bg-white shadow-lg rounded-lg p-6 fade-in hidden">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Cash Flow Results</h2>
+                    <ul class="space-y-2 text-gray-700 mb-8">
+                        <li><strong>Monthly Cash Flow:</strong> $<span id="monthly_cash_flow"></span></li>
+                        <li><strong>Annual Cash Flow:</strong> $<span id="annual_cash_flow"></span></li>
+                        <li><strong>Cash on Cash Return:</strong> <span id="cash_on_cash_return"></span>%</li>
+                        <li><strong>Cap Rate:</strong> <span id="cap_rate"></span>%</li>
+                    </ul>
+                    
+                    <canvas id="cashFlowChart" width="400" height="200"></canvas>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white mt-auto">
-        <div class="container mx-auto py-6 px-4">
-            <p class="text-center text-gray-600">&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; 2024 Real Estate Investment Platform. All rights reserved.
+            </p>
         </div>
     </footer>
 
@@ -102,6 +95,80 @@
         AOS.init({
             duration: 800,
             once: true,
+        });
+
+        document.getElementById('cashFlowForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const purchasePrice = parseFloat(document.getElementById('purchase_price').value);
+            const monthlyRent = parseFloat(document.getElementById('monthly_rent').value);
+            const monthlyExpenses = parseFloat(document.getElementById('monthly_expenses').value);
+            const vacancyRate = parseFloat(document.getElementById('vacancy_rate').value) / 100;
+
+            const effectiveMonthlyRent = monthlyRent * (1 - vacancyRate);
+            const monthlyCashFlow = effectiveMonthlyRent - monthlyExpenses;
+            const annualCashFlow = monthlyCashFlow * 12;
+            const cashOnCashReturn = (annualCashFlow / purchasePrice) * 100;
+            const capRate = ((effectiveMonthlyRent - monthlyExpenses) * 12 / purchasePrice) * 100;
+
+            document.getElementById('monthly_cash_flow').textContent = monthlyCashFlow.toFixed(2);
+            document.getElementById('annual_cash_flow').textContent = annualCashFlow.toFixed(2);
+            document.getElementById('cash_on_cash_return').textContent = cashOnCashReturn.toFixed(2);
+            document.getElementById('cap_rate').textContent = capRate.toFixed(2);
+
+            document.getElementById('results').classList.remove('hidden');
+
+            // Create chart
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monthly Income', 'Monthly Expenses', 'Monthly Cash Flow'],
+                    datasets: [{
+                        label: 'Cash Flow Breakdown',
+                        data: [effectiveMonthlyRent, monthlyExpenses, monthlyCashFlow],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Save calculations
+            fetch('{{ url_for("cash_flow_calculator") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    purchasePrice,
+                    monthlyRent,
+                    monthlyExpenses,
+                    vacancyRate,
+                    monthlyCashFlow,
+                    annualCashFlow,
+                    cashOnCashReturn,
+                    capRate
+                }),
+            })
+            .then(response => response.json())
+            .then(data => console.log('Calculations saved:', data))
+            .catch((error) => console.error('Error:', error));
         });
     </script>
 </body>

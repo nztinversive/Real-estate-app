@@ -1,4 +1,4 @@
-Flask==2.3.2
+Flask==2.2.5
 Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.4
 python-dotenv==1.0.0
@@ -8,3 +8,6 @@ Pillow==10.0.0
 PyPDF2==3.0.1
 nltk==3.8.1
 openai==1.45.0
+joblib
+pandas
+scikit-learn

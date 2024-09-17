@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syndication Tool - Real Estate Investment Platform</title>
+    <title>Property Comparison - Real Estate Investment Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -16,85 +18,90 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold flex items-center">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-8 w-8 mr-2">
-                Syndication Tool
-            </a>
-            <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white">Back to Dashboard</a>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('dashboard') }}" class="flex-shrink-0">
+                        <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                    </a>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
+                        <a href="{{ url_for('property_comparison') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Property Comparison</a>
+                    </div>
+                </div>
+                <div>
+                    <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="mb-4">
-              {% for message in messages %}
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-2" role="alert">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Property Comparison</h1>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Active Deals Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Property 1 Input Form -->
             <div data-aos="fade-right">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Active Syndication Deals</h2>
-                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
-                    <h3 class="text-xl font-semibold mb-2">Example Active Deal</h3>
-                    <p class="text-gray-600 mb-4">This is an example of an active syndication deal. Real deals will be displayed here.</p>
-                    <p class="mb-2"><strong>Target Amount:</strong> $1,000,000</p>
-                    <p class="mb-2"><strong>Current Amount:</strong> $750,000</p>
-                    <p class="mb-4"><strong>Progress:</strong> 75%</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                <form id="property1Form" class="bg-yellow-50 shadow-lg rounded-lg p-6 space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Property 1 Details</h2>
+                    <div>
+                        <label for="property1_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
+                        <input type="number" name="property1_price" id="property1_price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
                     </div>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</button>
-                </div>
-                
-                <!-- List of actual deals -->
-                {% for deal in deals %}
-                <div class="bg-white rounded-lg shadow-md p-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                    <h3 class="text-xl font-semibold mb-2">{{ deal.title }}</h3>
-                    <p class="text-gray-600 mb-4">{{ deal.description[:100] }}...</p>
-                    <p class="mb-2"><strong>Target Amount:</strong> ${{ "%.2f"|format(deal.target_amount) }}</p>
-                    <p class="mb-2"><strong>Current Amount:</strong> ${{ "%.2f"|format(deal.current_amount) }}</p>
-                    <p class="mb-4"><strong>Progress:</strong> {{ "%.2f"|format(deal.current_amount / deal.target_amount * 100) }}%</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ deal.current_amount / deal.target_amount * 100 }}%"></div>
+                    <div>
+                        <label for="property1_rent" class="block text-sm font-medium text-gray-700">Monthly Rent ($)</label>
+                        <input type="number" name="property1_rent" id="property1_rent" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
                     </div>
-                    <a href="{{ url_for('syndication.view_deal', deal_id=deal.id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">View Details</a>
-                </div>
-                {% endfor %}
+                    <div>
+                        <label for="property1_expenses" class="block text-sm font-medium text-gray-700">Monthly Expenses ($)</label>
+                        <input type="number" name="property1_expenses" id="property1_expenses" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
+                    </div>
+                </form>
             </div>
 
-            <!-- Create New Deal Section -->
+            <!-- Property 2 Input Form -->
             <div data-aos="fade-left">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Create New Syndication Deal</h2>
-                <form method="POST" action="{{ url_for('syndication.create_deal') }}" class="bg-white rounded-lg shadow-md p-6">
-                    <div class="mb-4">
-                        <label for="title" class="block text-gray-700 font-bold mb-2">Deal Title</label>
-                        <input type="text" id="title" name="title" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                <form id="property2Form" class="bg-yellow-50 shadow-lg rounded-lg p-6 space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Property 2 Details</h2>
+                    <div>
+                        <label for="property2_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
+                        <input type="number" name="property2_price" id="property2_price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
-                        <textarea id="description" name="description" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" rows="4"></textarea>
+                    <div>
+                        <label for="property2_rent" class="block text-sm font-medium text-gray-700">Monthly Rent ($)</label>
+                        <input type="number" name="property2_rent" id="property2_rent" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="target_amount" class="block text-gray-700 font-bold mb-2">Target Amount ($)</label>
-                        <input type="number" id="target_amount" name="target_amount" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                    <div>
+                        <label for="property2_expenses" class="block text-sm font-medium text-gray-700">Monthly Expenses ($)</label>
+                        <input type="number" name="property2_expenses" id="property2_expenses" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500" required>
                     </div>
-                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">Create Deal</button>
                 </form>
             </div>
         </div>
+
+        <div class="mt-8 text-center">
+            <button id="compareButton" class="bg-yellow-500 text-white px-6 py-3 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 ease-in-out">
+                Compare Properties
+            </button>
+        </div>
+
+        <div id="comparisonResults" class="mt-8 bg-yellow-50 shadow-lg rounded-lg p-6 hidden">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Comparison Results</h2>
+            <div id="resultsContent" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <canvas id="comparisonChart" class="mt-8" width="400" height="200"></canvas>
+        </div>
+
+        <div id="savedComparisons" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Saved Comparisons</h2>
+            <div id="savedComparisonsContent" class="space-y-4"></div>
+        </div>
     </main>
 
-    <footer class="bg-white mt-auto">
-        <div class="container mx-auto py-6 px-4">
-            <p class="text-center text-gray-600">&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; 2024 Real Estate Investment Platform. All rights reserved.
+            </p>
         </div>
     </footer>
 
@@ -103,6 +110,127 @@
             duration: 800,
             once: true,
         });
+
+        document.getElementById('compareButton').addEventListener('click', function() {
+            const property1 = {
+                price: parseFloat(document.getElementById('property1_price').value),
+                rent: parseFloat(document.getElementById('property1_rent').value),
+                expenses: parseFloat(document.getElementById('property1_expenses').value)
+            };
+
+            const property2 = {
+                price: parseFloat(document.getElementById('property2_price').value),
+                rent: parseFloat(document.getElementById('property2_rent').value),
+                expenses: parseFloat(document.getElementById('property2_expenses').value)
+            };
+
+            const comparison = compareProperties(property1, property2);
+            displayComparison(comparison);
+            saveComparison(comparison);
+        });
+
+        function compareProperties(property1, property2) {
+            const comparison = {
+                property1: {
+                    ...property1,
+                    cashFlow: property1.rent - property1.expenses,
+                    capRate: ((property1.rent - property1.expenses) * 12 / property1.price * 100).toFixed(2)
+                },
+                property2: {
+                    ...property2,
+                    cashFlow: property2.rent - property2.expenses,
+                    capRate: ((property2.rent - property2.expenses) * 12 / property2.price * 100).toFixed(2)
+                }
+            };
+
+            comparison.betterCashFlow = comparison.property1.cashFlow > comparison.property2.cashFlow ? 'Property 1' : 'Property 2';
+            comparison.betterCapRate = comparison.property1.capRate > comparison.property2.capRate ? 'Property 1' : 'Property 2';
+
+            return comparison;
+        }
+
+        function displayComparison(comparison) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div>
+                    <h3 class="text-lg font-semibold">Property 1</h3>
+                    <p>Purchase Price: $${comparison.property1.price}</p>
+                    <p>Monthly Rent: $${comparison.property1.rent}</p>
+                    <p>Monthly Expenses: $${comparison.property1.expenses}</p>
+                    <p>Monthly Cash Flow: $${comparison.property1.cashFlow}</p>
+                    <p>Cap Rate: ${comparison.property1.capRate}%</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold">Property 2</h3>
+                    <p>Purchase Price: $${comparison.property2.price}</p>
+                    <p>Monthly Rent: $${comparison.property2.rent}</p>
+                    <p>Monthly Expenses: $${comparison.property2.expenses}</p>
+                    <p>Monthly Cash Flow: $${comparison.property2.cashFlow}</p>
+                    <p>Cap Rate: ${comparison.property2.capRate}%</p>
+                </div>
+                <div class="col-span-2">
+                    <p>Better Cash Flow: ${comparison.betterCashFlow}</p>
+                    <p>Better Cap Rate: ${comparison.betterCapRate}</p>
+                </div>
+            `;
+
+            document.getElementById('comparisonResults').classList.remove('hidden');
+
+            // Create chart
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cash Flow', 'Cap Rate'],
+                    datasets: [
+                        {
+                            label: 'Property 1',
+                            data: [comparison.property1.cashFlow, comparison.property1.capRate],
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Property 2',
+                            data: [comparison.property2.cashFlow, comparison.property2.capRate],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function saveComparison(comparison) {
+            const savedComparisons = JSON.parse(localStorage.getItem('savedComparisons') || '[]');
+            savedComparisons.push(comparison);
+            localStorage.setItem('savedComparisons', JSON.stringify(savedComparisons));
+            displaySavedComparisons();
+        }
+
+        function displaySavedComparisons() {
+            const savedComparisons = JSON.parse(localStorage.getItem('savedComparisons') || '[]');
+            const savedComparisonsContent = document.getElementById('savedComparisonsContent');
+            savedComparisonsContent.innerHTML = savedComparisons.map((comparison, index) => `
+                <div class="bg-yellow-50 shadow-lg rounded-lg p-4">
+                    <h3 class="text-lg font-semibold">Comparison ${index + 1}</h3>
+                    <p>Property 1: $${comparison.property1.price} | Cash Flow: $${comparison.property1.cashFlow} | Cap Rate: ${comparison.property1.capRate}%</p>
+                    <p>Property 2: $${comparison.property2.price} | Cash Flow: $${comparison.property2.cashFlow} | Cap Rate: ${comparison.property2.capRate}%</p>
+                    <p>Better Cash Flow: ${comparison.betterCashFlow} | Better Cap Rate: ${comparison.betterCapRate}</p>
+                </div>
+            `).join('');
+        }
+
+        // Display saved comparisons on page load
+        displaySavedComparisons();
     </script>
 </body>
 </html>

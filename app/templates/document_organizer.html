@@ -37,12 +37,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ url_for('main.dashboard') }}" class="flex-shrink-0">
+                    <a href="{{ url_for('dashboard') }}" class="flex-shrink-0">
                         <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
                     </a>
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
-                        <a href="{{ url_for('main.document_organizer') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Document Organizer</a>
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
+                        <a href="{{ url_for('document_organizer') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Document Organizer</a>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
         <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8" data-aos="fade-up">
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Upload Documents</h2>
-                <form action="{{ url_for('main.document_organizer') }}" class="dropzone" id="document-dropzone">
+                <form action="{{ url_for('document_organizer') }}" class="dropzone" id="document-dropzone">
                     <div class="fallback">
                         <input name="file" type="file" multiple />
                     </div>

@@ -150,7 +150,7 @@ def cash_flow_calculator():
         # Process form data and calculate cash flow
         # For now, we'll just return a dummy response
         return jsonify({'cash_flow': 1000})
-    return render_template('cash_flow_calculator.html')
+    return render_template('app/templates/cash_flow_calculator.html')
 
 @main.route('/roi_calculator', methods=['GET', 'POST'])
 def roi_calculator():
