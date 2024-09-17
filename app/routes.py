@@ -7,7 +7,6 @@ from .document_processor import save_file, extract_text_from_image, generate_tag
 import json
 import base64
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
 from datetime import datetime, date
 from . import db
 from .ml_model import predict
@@ -15,6 +14,9 @@ from .syndication import syndication as syndication_blueprint
 
 main = Blueprint('main', __name__)
 CORS(main)
+
+# Initialize the OpenAI client with the API key from Replit secrets
+client = OpenAI(api_key=os.environ['OPENAI_KEY'])
 
 @main.route('/')
 def index():
@@ -321,3 +323,27 @@ def predict_cash_flow():
 @main.route('/syndication_tool')
 def syndication_tool():
     return redirect(url_for('syndication.syndication_dashboard'))
+
+@main.route('/chatbot_message', methods=['POST'])
+def chatbot_message():
+    data = request.json
+    user_message = data.get('message', '')
+
+    if not user_message:
+        return jsonify({'response': 'Please enter a message.'}), 400
+
+    try:
+        # Use OpenAI's ChatCompletion API with the correct model
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Make sure this is the correct model name
+            messages=[
+                {"role": "system", "content": "You are an AI assistant for a real estate investment platform. Provide helpful suggestions and summaries based on the user's data and questions."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+
+        ai_message = response.choices[0].message.content.strip()
+        return jsonify({'response': ai_message})
+    except Exception as e:
+        print(f"OpenAI API Error: {e}")
+        return jsonify({'response': 'Sorry, I encountered an error. Please try again later.'}), 500

@@ -3,6 +3,7 @@ import os
 from werkzeug.utils import secure_filename
 import openai
 from datetime import datetime
+from openai import OpenAI
 
 app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
 app.secret_key = 'your_secret_key_here'  # Replace with a real secret key
@@ -12,7 +13,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-openai.api_key = 'your_openai_api_key_here'  # Replace with your actual OpenAI API key
+openai.api_key = os.environ['OPENAI_KEY']  # Retrieve the API key from environment variables
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -172,6 +173,40 @@ def syndication_tool():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/chatbot_message', methods=['POST'])
+def chatbot_message():
+    data = request.json
+    user_message = data['message']
+
+    # Initialize the OpenAI client
+    client = OpenAI(api_key=os.environ['OPENAI_KEY'])
+
+    try:
+        # Use GPT-4o-mini to generate a response
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": """You are Sha, an AI assistant for the Zero Percent Investor Platform, a real estate investment platform. Provide helpful suggestions, summaries, and tips based on the user's questions, focusing on the following tools:
+
+                1. Property Description Generator: Tips for creating compelling property listings.
+                2. Cash Flow Calculator: Advice on calculating and interpreting cash flow.
+                3. ROI Calculator: Guidance on understanding and maximizing ROI.
+                4. Property Comparison: Strategies for effectively comparing properties.
+                5. Document Organizer: Best practices for organizing real estate documents.
+                6. Deal Analyzer: Insights on analyzing potential real estate deals.
+                7. Syndication Tool: Tips for managing and participating in real estate syndications.
+
+                Always include a practical tip related to using these tools or real estate investing in your response. Refer to yourself as Sha in your responses."""},
+                {"role": "user", "content": user_message}
+            ]
+        )
+
+        ai_message = response.choices[0].message.content.strip()
+        return jsonify({'response': ai_message})
+    except Exception as e:
+        print(f"OpenAI API Error: {e}")
+        return jsonify({'response': 'Sorry, I (Sha) encountered an error. Please try again later.'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=True)
