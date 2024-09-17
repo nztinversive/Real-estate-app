@@ -4,6 +4,8 @@ from .models import Deal, Investment, DealDocument
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
 
 syndication = Blueprint('syndication', __name__)
 
@@ -75,6 +77,27 @@ def upload_document(deal_id):
         db.session.commit()
         
         flash('Document uploaded successfully!', 'success')
+    
+    return redirect(url_for('syndication.view_deal', deal_id=deal_id))
+
+@syndication.route('/deals/<int:deal_id>/share', methods=['POST'])
+def share_deal(deal_id):
+    deal = Deal.query.get_or_404(deal_id)
+    recipient_email = request.form.get('email')
+    
+    # Simulate sending an email
+    try:
+        msg = MIMEText(f"Check out this deal: {deal.title}\n\n{deal.description}")
+        msg['Subject'] = f"Deal: {deal.title}"
+        msg['From'] = 'noreply@realestateplatform.com'
+        msg['To'] = recipient_email
+
+        # Simulate email sending (replace with actual email sending logic)
+        print(f"Sending email to {recipient_email}:\n{msg.as_string()}")
+
+        flash('Deal shared successfully!', 'success')
+    except Exception as e:
+        flash(f'Failed to share deal: {str(e)}', 'error')
     
     return redirect(url_for('syndication.view_deal', deal_id=deal_id))
 

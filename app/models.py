@@ -89,12 +89,15 @@ class User(UserMixin, db.Model):
 
 class Deal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     target_amount = db.Column(db.Float, nullable=False)
-    current_amount = db.Column(db.Float, default=0.0)
+    current_amount = db.Column(db.Float, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    investments = db.relationship('Investment', backref='deal', lazy=True)
+    documents = db.relationship('DealDocument', backref='deal', lazy=True)
+
+    def __repr__(self):
+        return f'<Deal {self.title}>'
 
 class Investment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -108,7 +111,11 @@ class DealDocument(db.Model):
     deal_id = db.Column(db.Integer, db.ForeignKey('deal.id'), nullable=False)
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(50), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<DealDocument {self.filename}>'
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
