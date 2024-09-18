@@ -386,9 +386,10 @@ def predict_cash_flow():
 
     return jsonify({'predicted_cash_flow': prediction}), 200
 
-@main.route('/syndication_tool')
-def syndication_tool():
-    return redirect(url_for('syndication.syndication_dashboard'))
+@main.route('/syndication')
+def syndication():
+    deals = Deal.query.all()  # Fetch all deals from the database
+    return render_template('syndication.html', deals=deals)
 
 @main.route('/chatbot_message', methods=['POST'])
 def chatbot_message():

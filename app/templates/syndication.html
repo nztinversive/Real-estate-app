@@ -1,48 +1,183 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Real Estate Investment Platform{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-    </style>
-    {% block extra_head %}{% endblock %}
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold flex items-center">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-8 w-8 mr-2">
-                Real Estate Investment Platform
-            </a>
-            <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white">Back to Dashboard</a>
+{% extends "base.html" %}
+
+{% block title %}Syndication Tool - Real Estate Investment Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8" data-aos="fade-down">Syndication Tool</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Deals List -->
+        <div class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up">
+            <h2 class="text-2xl font-semibold mb-4">Active Deals</h2>
+            <ul class="space-y-4">
+                {% for deal in deals %}
+                <li class="border-b pb-4">
+                    <h3 class="text-xl font-medium">{{ deal.name }}</h3>
+                    <p class="text-gray-600">{{ deal.description[:100] }}...</p>
+                    <div class="mt-2">
+                        <span class="text-sm text-gray-500">Target: ${{ deal.target_raise }}</span>
+                        <span class="text-sm text-gray-500 ml-4">Progress: {{ deal.progress }}%</span>
+                    </div>
+                    <a href="#" onclick="showDealDetails('{{ deal.id }}')" class="text-blue-600 hover:underline mt-2 inline-block">View Details</a>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-    </nav>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="bg-white mt-auto">
-        <div class="container mx-auto py-6 px-4">
-            <p class="text-center text-gray-600">&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+        <!-- Deal Details -->
+        <div id="dealDetails" class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up">
+            <h2 class="text-2xl font-semibold mb-4">Deal Details</h2>
+            <div id="dealContent">
+                <!-- Deal details will be loaded here -->
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <script>
-        AOS.init({
-            duration: 800,
-            once: true,
+    <!-- Create a Deal Section -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6" data-aos="fade-up">
+        <h2 class="text-2xl font-semibold mb-4">Create a New Deal</h2>
+        <form id="createDealForm" class="space-y-4">
+            <div>
+                <label for="dealName" class="block text-sm font-medium text-gray-700">Deal Name</label>
+                <input type="text" id="dealName" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="dealDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea id="dealDescription" name="description" rows="3" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50"></textarea>
+            </div>
+            <div>
+                <label for="targetRaise" class="block text-sm font-medium text-gray-700">Target Raise ($)</label>
+                <input type="number" id="targetRaise" name="target_raise" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+                <input type="date" id="startDate" name="start_date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
+                <input type="date" id="endDate" name="end_date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50">
+            </div>
+            <button type="submit" class="w-full bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">Create Deal</button>
+        </form>
+    </div>
+
+    <!-- Documents Section -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6" data-aos="fade-up">
+        <h2 class="text-2xl font-semibold mb-4">Documents</h2>
+        <div id="documentsList">
+            <!-- Document list will be loaded here -->
+        </div>
+        <form id="uploadForm" class="mt-4">
+            <div class="flex items-center">
+                <input type="file" id="document" name="document" class="flex-grow">
+                <button type="submit" class="ml-4 bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition duration-300">Upload</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Investor Management -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6" data-aos="fade-up">
+        <h2 class="text-2xl font-semibold mb-4">Investor Management</h2>
+        <div id="investorsList">
+            <!-- Investors list will be loaded here -->
+        </div>
+        <form id="addInvestorForm" class="mt-4">
+            <div class="flex items-center">
+                <input type="email" id="investorEmail" name="email" placeholder="Investor Email" class="flex-grow px-3 py-2 border rounded">
+                <button type="submit" class="ml-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300">Add Investor</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function showDealDetails(dealId) {
+        // Fetch and display deal details
+        fetch(`/api/deal/${dealId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('dealContent').innerHTML = `
+                    <h3 class="text-xl font-medium">${data.name}</h3>
+                    <p class="text-gray-600 mt-2">${data.description}</p>
+                    <div class="mt-4">
+                        <p><strong>Target Raise:</strong> $${data.target_raise}</p>
+                        <p><strong>Progress:</strong> ${data.progress}%</p>
+                        <p><strong>Start Date:</strong> ${data.start_date}</p>
+                        <p><strong>End Date:</strong> ${data.end_date}</p>
+                    </div>
+                `;
+            });
+
+        // Load documents for this deal
+        loadDocuments(dealId);
+
+        // Load investors for this deal
+        loadInvestors(dealId);
+    }
+
+    function loadDocuments(dealId) {
+        fetch(`/api/deal/${dealId}/documents`)
+            .then(response => response.json())
+            .then(data => {
+                const documentsList = document.getElementById('documentsList');
+                documentsList.innerHTML = data.documents.map(doc => `
+                    <div class="flex justify-between items-center mb-2">
+                        <a href="${doc.url}" class="text-pink-600 hover:underline">${doc.filename}</a>
+                        <span class="text-sm text-gray-500">${doc.upload_date}</span>
+                    </div>
+                `).join('');
+            });
+    }
+
+    function loadInvestors(dealId) {
+        fetch(`/api/deal/${dealId}/investors`)
+            .then(response => response.json())
+            .then(data => {
+                const investorsList = document.getElementById('investorsList');
+                investorsList.innerHTML = data.investors.map(investor => `
+                    <div class="flex justify-between items-center mb-2">
+                        <span>${investor.name} (${investor.email})</span>
+                        <span class="text-sm text-gray-500">Invested: $${investor.amount}</span>
+                    </div>
+                `).join('');
+            });
+    }
+
+    document.getElementById('createDealForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/api/deal/create', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Deal created successfully!');
+                location.reload(); // Reload the page to show the new deal
+            } else {
+                alert('Error creating deal: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while creating the deal.');
         });
-    </script>
-    {% block extra_scripts %}{% endblock %}
-</body>
-</html>
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Handle document upload
+        // You'll need to implement this functionality
+    });
+
+    document.getElementById('addInvestorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Handle adding new investor
+        // You'll need to implement this functionality
+    });
+</script>
+{% endblock %}
