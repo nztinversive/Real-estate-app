@@ -7,12 +7,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendButton = document.getElementById('send-button');
 
     // Toggle chatbot visibility with smooth animation
-    chatbotHeader.addEventListener('click', () => {
-        chatbotContainer.classList.toggle('h-96');
-        chatbotContainer.classList.toggle('h-12');
+    chatbotHeader.addEventListener('click', (event) => {
+        if (event.target !== chatbotClose) {
+            chatbotContainer.classList.toggle('h-96');
+            chatbotContainer.classList.toggle('h-12');
+        }
     });
 
-    chatbotClose.addEventListener('click', () => {
+    chatbotClose.addEventListener('click', (event) => {
+        event.stopPropagation();
         chatbotContainer.classList.add('h-12');
         chatbotContainer.classList.remove('h-96');
     });
