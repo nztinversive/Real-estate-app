@@ -30,12 +30,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ url_for('dashboard') }}" class="flex-shrink-0">
+                    <a href="{{ url_for('main.dashboard') }}" class="flex-shrink-0">
                         <img class="h-8 w-8" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
                     </a>
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
-                        <a href="{{ url_for('deal_analyzer') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Deal Analyzer</a>
+                        <a href="{{ url_for('main.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-indigo-700">Dashboard</a>
+                        <a href="{{ url_for('main.deal_analyzer') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-800">Deal Analyzer</a>
                     </div>
                 </div>
                 <div>

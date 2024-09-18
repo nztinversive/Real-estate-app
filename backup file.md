@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.property_description_generator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{{ url_for('property_description_generator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Generate Description
                     </a>
                 </div>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.cash_flow_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <a href="{{ url_for('cash_flow_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Calculate Cash Flow
                     </a>
                 </div>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.roi_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <a href="{{ url_for('roi_calculator') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                         Calculate ROI
                     </a>
                 </div>
@@ -100,7 +100,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.property_comparison') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    <a href="{{ url_for('property_comparison') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                         Compare Properties
                     </a>
                 </div>
@@ -122,7 +122,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.document_organizer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <a href="{{ url_for('document_organizer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                         Organize Documents
                     </a>
                 </div>
@@ -144,7 +144,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.deal_analyzer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <a href="{{ url_for('deal_analyzer') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Analyze Deal
                     </a>
                 </div>
@@ -166,7 +166,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('main.syndication_tool') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-pink-700 bg-pink-100 hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    <a href="{{ url_for('syndication_tool') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-pink-700 bg-pink-100 hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
                         Manage Syndications
                     </a>
                 </div>

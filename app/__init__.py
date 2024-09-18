@@ -37,5 +37,12 @@ def create_app():
 
         from .syndication import syndication as syndication_blueprint
         app.register_blueprint(syndication_blueprint, url_prefix='/syndication')
-    
+        
+        # Create database tables
+        db.create_all()
+        
+        # Ensure sample data is populated
+        from .routes import populate_sample_data
+        populate_sample_data()
+
     return app

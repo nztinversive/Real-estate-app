@@ -4,21 +4,20 @@ from werkzeug.utils import secure_filename
 import os
 from .models import Document, PropertyData, MarketTrend, AnalyzedDeal, Deal, Investment, User
 from .document_processor import save_file, extract_text_from_image, generate_tags, generate_property_description
-import json
 import base64
-from openai import OpenAI
-from datetime import datetime, date
-from . import db
-from .ml_model import predict
-from .syndication import syndication as syndication_blueprint
+import openai
+from . import db  # Import db from the app package
+from .ml_model import predict  # Add this import at the top of the file
+from datetime import date, datetime
+
+# Set the OpenAI API key
+openai.api_key = os.environ['OPENAI_KEY']
 
 main = Blueprint('main', __name__)
 CORS(main)
 
-# Initialize the OpenAI client with the API key from Replit secrets
-client = OpenAI(api_key=os.environ['OPENAI_KEY'])
-
 @main.route('/')
+@main.route('/index')
 def index():
     return redirect(url_for('main.dashboard'))
 
@@ -33,46 +32,66 @@ def property_description_generator():
             return jsonify({'error': 'No photos provided'}), 400
 
         photos = request.files.getlist('photos')
-        photo_descriptions = []
         photo_info = []
+        image_contents = []
 
         for photo in photos:
             if photo and allowed_file(photo.filename):
                 filename, file_path = save_file(photo)
                 
-                description = extract_text_from_image(file_path)
-                tags = generate_tags(description)
-
-                photo_descriptions.append(description)
-                photo_info.append({
-                    'filename': filename,
-                    'file_path': url_for('main.uploaded_file', filename=filename, _external=True),
-                    'tags': tags
+                # Read the image file and encode it to base64
+                with open(file_path, "rb") as image_file:
+                    encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                
+                # Add image content for the vision model
+                image_contents.append({
+                    "type": "image_url",
+                    "image_url": f"data:image/jpeg;base64,{encoded_image}"
                 })
 
-        if not photo_descriptions:
+                photo_info.append({
+                    'filename': filename,
+                    'file_path': url_for('main.uploaded_file', filename=filename, _external=True)
+                })
+
+        if not image_contents:
             return jsonify({'error': 'No valid photos provided'}), 400
 
-        combined_description = "\n".join(photo_descriptions)
-        property_description = generate_property_description(combined_description)
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a professional real estate agent. Analyze the provided images and generate a compelling property description based on what you see."
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Generate a comprehensive and appealing property description. Include details about the property's features, style, condition, and any standout elements you observe in the following images."
+                        },
+                        *image_contents
+                    ]
+                }
+            ]
 
-        return jsonify({
-            'description': property_description,
-            'photo_info': photo_info
-        })
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                max_tokens=300
+            )
+            
+            property_description = response.choices[0].message.content.strip()
+
+            return jsonify({
+                'description': property_description,
+                'photo_info': photo_info
+            })
+        except Exception as e:
+            print(f"OpenAI API Error: {str(e)}")
+            return jsonify({'error': str(e)}), 500
 
     return render_template('property_description_generator.html')
-
-def generate_property_description(combined_description):
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a professional real estate agent. Generate a compelling property description based on the following information."},
-            {"role": "user", "content": f"Generate a property description based on this information:\n\n{combined_description}"}
-        ]
-    )
-    
-    return response.choices[0].message.content.strip()
 
 @main.route('/document_organizer', methods=['GET', 'POST'])
 def document_organizer():
@@ -84,30 +103,41 @@ def document_organizer():
             return jsonify({'error': 'No selected file'}), 400
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = save_file(file)
+            filename, file_path = save_file(file)
             
+            # Extract text and generate tags
             if file.content_type.startswith('image/'):
-                description = extract_text_from_image(file_path)
-                tags = generate_tags(description)
+                extracted_text = extract_text_from_image(file_path)
             else:
-                description = ""
-                tags = []
+                # For non-image files, you might want to implement a different text extraction method
+                extracted_text = "Text extraction not supported for this file type."
+            
+            tags = generate_tags(extracted_text)
 
+            # Create a new Document instance and save to database
             new_document = Document(
                 filename=filename,
                 file_path=file_path,
                 file_type=file.content_type,
-                extracted_text=description,
-                tags=', '.join(tags)
+                extracted_text=extracted_text,
+                tags=json.dumps(tags)  # Store tags as a JSON string
             )
             db.session.add(new_document)
             db.session.commit()
 
-            return jsonify({'success': True, 'document_id': new_document.id}), 201
+            return jsonify({
+                'success': True, 
+                'document_id': new_document.id,
+                'filename': filename,
+                'file_type': file.content_type,
+                'tags': tags
+            }), 201
         
+        return jsonify({'error': 'Invalid file type'}), 400
+
+    # GET request: Fetch and display all documents
     documents = Document.query.order_by(Document.upload_date.desc()).all()
-    return render_template('document_organizer.html', documents=documents)
+    return render_template('document_organizer.html', documents=documents, json=json)  # Pass json to the template
 
 @main.route('/document/<int:document_id>')
 def get_document(document_id):
@@ -152,15 +182,35 @@ def cash_flow_calculator():
         # Process form data and calculate cash flow
         # For now, we'll just return a dummy response
         return jsonify({'cash_flow': 1000})
-    return render_template('app/templates/cash_flow_calculator.html')
+    return render_template('cash_flow_calculator.html')
 
 @main.route('/roi_calculator', methods=['GET', 'POST'])
 def roi_calculator():
     if request.method == 'POST':
-        # Process form data and calculate ROI
-        # For now, we'll just return a dummy response
-        return jsonify({'roi': 10})
-    return render_template('roi_calculator.html')
+        data = request.json
+        initial_investment = float(data.get('initial_investment', 0))
+        annual_return = float(data.get('annual_return', 0))
+        investment_period = float(data.get('investment_period', 0))
+
+        # Calculate ROI
+        total_return = annual_return * investment_period
+        roi = ((total_return - initial_investment) / initial_investment) * 100
+
+        result = {
+            'roi': round(roi, 2),
+            'total_return': round(total_return, 2),
+            'initial_investment': initial_investment,
+            'annual_return': annual_return,
+            'investment_period': investment_period
+        }
+
+        # Save calculation (you might want to implement this)
+        # save_calculation(result)
+
+        return jsonify(result)
+
+    saved_calculations = []  # Or fetch saved calculations from your database
+    return render_template('roi_calculator.html', saved_calculations=saved_calculations)
 
 @main.route('/property_comparison', methods=['GET', 'POST'])
 def property_comparison():
@@ -198,19 +248,26 @@ def deal_analyzer():
             cap_rate = (net_operating_income / purchase_price) * 100 if purchase_price else 0
             cash_on_cash_return = roi
 
-            # Use ML model to predict cash flow
+            # Fetch the latest market trend data
             market_trend = MarketTrend.query.order_by(MarketTrend.date.desc()).first()
             if not market_trend:
-                raise ValueError("No market trend data available.")
-            
+                # If no market trend data is available, use default values
+                median_home_price = 300000  # Example default value
+                rental_rate = 2.5  # Example default value
+                unemployment_rate = 5.0  # Example default value
+            else:
+                median_home_price = market_trend.median_home_price
+                rental_rate = market_trend.rental_rate
+                unemployment_rate = market_trend.unemployment_rate
+
             input_features = [
                 purchase_price,
                 monthly_rental_income,
                 monthly_operating_expenses,
                 vacancy_rate,
-                market_trend.median_home_price,
-                market_trend.rental_rate,
-                market_trend.unemployment_rate
+                median_home_price,
+                rental_rate,
+                unemployment_rate
             ]
             predicted_cash_flow = predict(input_features)
 
@@ -248,11 +305,12 @@ def api_saved_deals():
 
 @main.route('/populate_sample_data')
 def populate_sample_data():
-    from .ml_model import predict  # Ensure all imports are correct
-    # Sample Property Data
-    if not PropertyData.query.first():
+    # Check if data already exists
+    if PropertyData.query.first() is None:
+        # Sample Property Data
         sample_properties = [
             PropertyData(
+                property_name="Maple Street Residence",
                 address="123 Maple Street",
                 purchase_price=250000,
                 rental_income=2000,
@@ -261,20 +319,21 @@ def populate_sample_data():
                 purchase_date=date(2022, 1, 15)
             ),
             PropertyData(
+                property_name="Oak Avenue Apartment",
                 address="456 Oak Avenue",
-                purchase_price=350000,
+                purchase_price=300000,
                 rental_income=2500,
-                operating_expenses=900,
-                vacancy_rate=0.04,
-                purchase_date=date(2021, 6, 10)
+                operating_expenses=1000,
+                vacancy_rate=0.03,
+                purchase_date=date(2022, 3, 1)
             ),
-            # Add more sample properties as needed
         ]
         db.session.add_all(sample_properties)
         db.session.commit()
 
-    # Sample Market Trends
-    if not MarketTrend.query.first():
+    # Check if market trends data already exists
+    if MarketTrend.query.first() is None:
+        # Sample Market Trends
         sample_trends = [
             MarketTrend(
                 date=date(2023, 1, 1),
@@ -288,7 +347,6 @@ def populate_sample_data():
                 rental_rate=2.6,
                 unemployment_rate=4.8
             ),
-            # Add more sample trends as needed
         ]
         db.session.add_all(sample_trends)
         db.session.commit()
@@ -333,13 +391,13 @@ def chatbot_message():
         return jsonify({'response': 'Please enter a message.'}), 400
 
     try:
-        # Use OpenAI's ChatCompletion API with the correct model
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Make sure this is the correct model name
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an AI assistant for a real estate investment platform. Provide helpful suggestions and summaries based on the user's data and questions."},
                 {"role": "user", "content": user_message}
-            ]
+            ],
+            max_tokens=300
         )
 
         ai_message = response.choices[0].message.content.strip()

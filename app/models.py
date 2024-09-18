@@ -7,30 +7,29 @@ class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
-    file_type = db.Column(db.String(50), nullable=False)
+    file_type = db.Column(db.String(50))
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     extracted_text = db.Column(db.Text)
     tags = db.Column(db.String(255))
-    version = db.Column(db.Integer, default=1)
 
     def __repr__(self):
         return f'<Document {self.filename}>'
 
 class PropertyData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    property_name = db.Column(db.String(255), nullable=False)
-    address = db.Column(db.String(255), nullable=False)
+    property_name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
     purchase_price = db.Column(db.Float, nullable=False)
     rental_income = db.Column(db.Float, nullable=False)
-    operating_expenses = db.Column(db.Float, nullable=False)
-    vacancy_rate = db.Column(db.Float, nullable=True)
-    purchase_date = db.Column(db.Date, nullable=False, default=date.today)
-    square_footage = db.Column(db.Integer, nullable=False)
-    num_bedrooms = db.Column(db.Integer, nullable=False)
-    num_bathrooms = db.Column(db.Float, nullable=False)
-    year_built = db.Column(db.Integer, nullable=False)
-    location = db.Column(db.String(255), nullable=False)
-    estimated_rent = db.Column(db.Float, nullable=False)
+    operating_expenses = db.Column(db.Float, nullable=False)  # Changed from 'expenses'
+    vacancy_rate = db.Column(db.Float, nullable=False)
+    purchase_date = db.Column(db.Date, nullable=False)
+    square_footage = db.Column(db.Integer, nullable=True)
+    num_bedrooms = db.Column(db.Integer, nullable=True)
+    num_bathrooms = db.Column(db.Float, nullable=True)
+    year_built = db.Column(db.Integer, nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    estimated_rent = db.Column(db.Float, nullable=True)
 
     def __repr__(self):
         return f'<PropertyData {self.property_name}>'

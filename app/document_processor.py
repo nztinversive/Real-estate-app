@@ -24,7 +24,7 @@ def extract_text_from_image(image_path):
     from openai import OpenAI  # {{ edit_1 }}
     from flask import current_app  # Ensure current_app is imported
 
-    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
+    client = OpenAI(api_key=os.environ['OPENAI_KEY'])  # Initialize within function
     with open(image_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -49,10 +49,7 @@ def extract_text_from_image(image_path):
     return response.choices[0].message.content.strip()
 
 def generate_tags(text):
-    from openai import OpenAI  # {{ edit_2 }}
-    from flask import current_app  # Ensure current_app is imported
-
-    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
+    client = OpenAI(api_key=os.environ['OPENAI_KEY'])
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -65,7 +62,7 @@ def generate_tags(text):
     return tags[:10]  # Ensure we return at most 10 tags
 
 def generate_property_description(combined_description):
-    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])  # Initialize within function
+    client = OpenAI(api_key=os.environ['OPENAI_KEY'])  # Initialize within function
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

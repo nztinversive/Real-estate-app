@@ -46,13 +46,21 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-900 text-white shadow-lg">
+    <nav class="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white shadow-lg">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="{{ url_for('dashboard') }}" class="text-xl font-bold flex items-center">
+            <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold flex items-center">
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-8 w-8 mr-2">
-                Zero Percent Investor Platform
+                <span>Zero Percent Investor</span>
             </a>
-            <a href="{{ url_for('dashboard') }}" class="text-gray-300 hover:text-white">Back to Dashboard</a>
+            <div class="space-x-4">
+                <a href="{{ url_for('main.property_description_generator') }}" class="hover:text-indigo-200">Property Description Generator</a>
+                <a href="{{ url_for('main.cash_flow_calculator') }}" class="hover:text-indigo-200">Cash Flow Calculator</a>
+                <a href="{{ url_for('main.roi_calculator') }}" class="hover:text-indigo-200">ROI Calculator</a>
+                <a href="{{ url_for('main.property_comparison') }}" class="hover:text-indigo-200">Property Comparison</a>
+                <a href="{{ url_for('main.document_organizer') }}" class="hover:text-indigo-200">Document Organizer</a>
+                <a href="{{ url_for('main.deal_analyzer') }}" class="hover:text-indigo-200">Deal Analyzer</a>
+                <a href="{{ url_for('main.syndication_tool') }}" class="hover:text-indigo-200">Syndication Tool</a>
+            </div>
         </div>
     </nav>
 

@@ -4,24 +4,17 @@ from flask import current_app
 import pandas as pd
 
 def predict(input_features):
-    """
-    Predicts the cash flow based on input features using a trained ML model.
+    # This is a placeholder for your actual machine learning model
+    # In a real scenario, you would load a trained model and use it to make predictions
+    # For now, we'll just return a simple calculation as an example
+    purchase_price, monthly_rental_income, monthly_operating_expenses, vacancy_rate, median_home_price, rental_rate, unemployment_rate = input_features
     
-    Args:
-        input_features (list): A list of input features for prediction.
-        
-    Returns:
-        float: The predicted cash flow.
-    """
-    model_path = os.path.join(current_app.instance_path, 'models', 'cash_flow_model.pkl')
+    annual_rental_income = monthly_rental_income * 12 * (1 - vacancy_rate)
+    annual_operating_expenses = monthly_operating_expenses * 12
+    predicted_cash_flow = annual_rental_income - annual_operating_expenses
     
-    if not os.path.exists(model_path):
-        raise FileNotFoundError("Trained model not found. Please train the model using train_model.py.")
+    # Apply some simple adjustments based on market factors
+    market_factor = (median_home_price / 300000) * (rental_rate / 2.5) * (5.0 / unemployment_rate)
+    predicted_cash_flow *= market_factor
     
-    model = joblib.load(model_path)
-    input_df = pd.DataFrame([input_features], columns=[
-        'purchase_price', 'rental_income', 'operating_expenses', 'vacancy_rate',
-        'median_home_price', 'rental_rate', 'unemployment_rate'
-    ])
-    prediction = model.predict(input_df)
-    return prediction[0]
+    return round(predicted_cash_flow, 2)
