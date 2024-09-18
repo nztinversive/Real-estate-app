@@ -9,6 +9,7 @@ import openai
 from . import db  # Import db from the app package
 from .ml_model import predict  # Add this import at the top of the file
 from datetime import date, datetime
+import json  # Add this import at the top of the file
 
 # Set the OpenAI API key
 openai.api_key = os.environ['OPENAI_KEY']
@@ -137,7 +138,14 @@ def document_organizer():
 
     # GET request: Fetch and display all documents
     documents = Document.query.order_by(Document.upload_date.desc()).all()
-    return render_template('document_organizer.html', documents=documents, json=json)  # Pass json to the template
+    documents_data = []
+    for document in documents:
+        doc_data = document.__dict__.copy()
+        doc_data.pop('_sa_instance_state', None)  # Remove SQLAlchemy internal state
+        doc_data['upload_date'] = doc_data['upload_date'].strftime('%Y-%m-%d %H:%M:%S')
+        doc_data['tags'] = json.loads(document.tags) if document.tags else []
+        documents_data.append(doc_data)
+    return render_template('document_organizer.html', documents=documents_data)
 
 @main.route('/document/<int:document_id>')
 def get_document(document_id):
