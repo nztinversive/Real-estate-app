@@ -391,6 +391,76 @@ def syndication():
     deals = Deal.query.all()  # Fetch all deals from the database
     return render_template('syndication.html', deals=deals)
 
+@main.route('/api/deal/<int:deal_id>', methods=['GET'])
+def get_deal(deal_id):
+    deal = Deal.query.get_or_404(deal_id)
+    return jsonify(deal.to_dict())
+
+@main.route('/api/deal/create', methods=['POST'])
+def create_deal():
+    try:
+        new_deal = Deal(
+            name=request.form['name'],
+            description=request.form['description'],
+            target_raise=float(request.form['target_raise']),
+            start_date=datetime.strptime(request.form['start_date'], '%Y-%m-%d').date(),
+            end_date=datetime.strptime(request.form['end_date'], '%Y-%m-%d').date(),
+            progress=0
+        )
+        db.session.add(new_deal)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Deal created successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@main.route('/api/deal/<int:deal_id>/documents', methods=['GET'])
+def get_deal_documents(deal_id):
+    deal = Deal.query.get_or_404(deal_id)
+    documents = [doc.to_dict() for doc in deal.documents]
+    return jsonify({'documents': documents})
+
+@main.route('/api/deal/<int:deal_id>/investors', methods=['GET'])
+def get_deal_investors(deal_id):
+    deal = Deal.query.get_or_404(deal_id)
+    investors = [inv.to_dict() for inv in deal.investments]
+    return jsonify({'investors': investors})
+
+@main.route('/api/document/upload', methods=['POST'])
+def upload_document():
+    try:
+        deal_id = request.form['deal_id']
+        deal = Deal.query.get_or_404(deal_id)
+        file = request.files['document']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            new_document = Document(filename=filename, file_path=file_path, deal_id=deal_id)
+            db.session.add(new_document)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Document uploaded successfully'})
+        else:
+            return jsonify({'success': False, 'error': 'Invalid file'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@main.route('/api/investor/add', methods=['POST'])
+def add_investor():
+    try:
+        deal_id = request.form['deal_id']
+        deal = Deal.query.get_or_404(deal_id)
+        new_investment = Investment(
+            deal_id=deal_id,
+            investor_email=request.form['email'],
+            amount=float(request.form['amount'])
+        )
+        db.session.add(new_investment)
+        deal.progress = (sum([inv.amount for inv in deal.investments]) / deal.target_raise) * 100
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Investor added successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @main.route('/chatbot_message', methods=['POST'])
 def chatbot_message():
     data = request.json
