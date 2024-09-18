@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import base64
 from openai import OpenAI
-from flask import current_app
+from flask import current_app, url_for
 
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -11,14 +11,11 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 def save_file(file):
     filename = secure_filename(file.filename)
-    upload_folder = current_app.config.get('UPLOAD_FOLDER')
-    if not upload_folder:
-        raise ValueError("UPLOAD_FOLDER not configured in app")
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder)
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_folder, exist_ok=True)  # Ensure the folder exists
     file_path = os.path.join(upload_folder, filename)
     file.save(file_path)
-    return filename, file_path  # Return both the filename and the full file path
+    return filename, url_for('main.uploaded_file', filename=filename, _external=True, _scheme='https')
 
 def extract_text_from_image(image_path):
     from openai import OpenAI  # {{ edit_1 }}

@@ -1,21 +1,21 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_file, send_from_directory
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
+from flask import Blueprint, render_template, request, jsonify, current_app, url_for, redirect, send_from_directory
+from .models import PropertyData, MarketTrend, AnalyzedDeal, Deal, Document, Investment
+from . import db
+from datetime import datetime, date
 import os
-from .models import Document, PropertyData, MarketTrend, AnalyzedDeal, Deal, Investment, User
-from .document_processor import save_file, extract_text_from_image, generate_tags, generate_property_description
+from werkzeug.utils import secure_filename
+from .ml_model import predict
+from openai import OpenAI
+import json
+from dotenv import load_dotenv
+from .document_processor import save_file, extract_text_from_image, generate_tags
 import base64
-import openai
-from . import db  # Import db from the app package
-from .ml_model import predict  # Add this import at the top of the file
-from datetime import date, datetime
-import json  # Add this import at the top of the file
 
-# Set the OpenAI API key
-openai.api_key = os.environ['OPENAI_KEY']
+load_dotenv()
 
 main = Blueprint('main', __name__)
-CORS(main)
+
+client = OpenAI(api_key=os.getenv('OPENAI_KEY'))
 
 @main.route('/')
 @main.route('/index')
@@ -38,7 +38,10 @@ def property_description_generator():
 
         for photo in photos:
             if photo and allowed_file(photo.filename):
-                filename, file_path = save_file(photo)
+                filename, file_url = save_file(photo)
+                
+                # Get the actual file path
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                 
                 # Read the image file and encode it to base64
                 with open(file_path, "rb") as image_file:
@@ -47,12 +50,14 @@ def property_description_generator():
                 # Add image content for the vision model
                 image_contents.append({
                     "type": "image_url",
-                    "image_url": f"data:image/jpeg;base64,{encoded_image}"
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{encoded_image}"
+                    }
                 })
 
                 photo_info.append({
                     'filename': filename,
-                    'file_path': url_for('main.uploaded_file', filename=filename, _external=True)
+                    'file_path': file_url
                 })
 
         if not image_contents:
@@ -76,7 +81,7 @@ def property_description_generator():
                 }
             ]
 
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
                 max_tokens=300
@@ -84,10 +89,9 @@ def property_description_generator():
             
             property_description = response.choices[0].message.content.strip()
 
-            return jsonify({
-                'description': property_description,
-                'photo_info': photo_info
-            })
+            return render_template('property_description_generator.html', 
+                                   description=property_description, 
+                                   photo_info=photo_info)
         except Exception as e:
             print(f"OpenAI API Error: {str(e)}")
             return jsonify({'error': str(e)}), 500
@@ -181,7 +185,7 @@ def search_documents():
     } for doc in documents])
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @main.route('/cash_flow_calculator', methods=['GET', 'POST'])
@@ -466,11 +470,17 @@ def chatbot_message():
     data = request.json
     user_message = data.get('message', '')
 
+    print(f"Received message: {user_message}")  # Debug print
+
     if not user_message:
         return jsonify({'response': 'Please enter a message.'}), 400
 
     try:
-        response = openai.ChatCompletion.create(
+        print(f"OpenAI API Key: {os.getenv('OPENAI_KEY')[:5]}...")  # Debug print (first 5 chars of API key)
+        print(f"Using model: gpt-4o-mini")  # Debug print
+
+        client = OpenAI(api_key=os.getenv('OPENAI_KEY'))
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an AI assistant for a real estate investment platform. Provide helpful suggestions and summaries based on the user's data and questions."},
@@ -480,6 +490,7 @@ def chatbot_message():
         )
 
         ai_message = response.choices[0].message.content.strip()
+        print(f"AI response: {ai_message}")  # Debug print
         return jsonify({'response': ai_message})
     except Exception as e:
         print(f"OpenAI API Error: {e}")

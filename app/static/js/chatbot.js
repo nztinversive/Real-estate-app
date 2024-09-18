@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
             userInput.value = '';
             showTypingIndicator();  // Show typing indicator
 
+            console.log('Sending message:', message);  // Debug log
+
             // Send message to backend and get response
             fetch('/chatbot_message', {
                 method: 'POST',
@@ -40,8 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ message: message }),
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);  // Debug log
+                return response.json();
+            })
             .then(data => {
+                console.log('Received data:', data);  // Debug log
                 removeTypingIndicator();  // Remove typing indicator
                 addMessage('bot', data.response);
             })

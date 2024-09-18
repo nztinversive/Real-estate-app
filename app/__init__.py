@@ -17,10 +17,14 @@ def create_app():
         UPLOAD_FOLDER=os.path.join(app.instance_path, 'uploads')
     )
     
+    # Ensure instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # Ensure upload folder exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     db.init_app(app)
     migrate.init_app(app, db)

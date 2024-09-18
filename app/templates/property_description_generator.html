@@ -143,7 +143,14 @@
 
         // Preserve form data and scroll position on page reload
         window.onbeforeunload = function() {
-            localStorage.setItem('formData', JSON.stringify(Object.fromEntries(new FormData(document.getElementById('propertyForm')))));
+            const formData = new FormData(document.getElementById('propertyForm'));
+            const serializedData = {};
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'photos') {
+                    serializedData[key] = value;
+                }
+            }
+            localStorage.setItem('formData', JSON.stringify(serializedData));
             localStorage.setItem('scrollPosition', window.pageYOffset);
         };
 
@@ -152,7 +159,9 @@
             if (formData) {
                 Object.keys(formData).forEach(key => {
                     const field = document.getElementById(key);
-                    if (field) field.value = formData[key];
+                    if (field && field.type !== 'file') {
+                        field.value = formData[key];
+                    }
                 });
             }
             const scrollPosition = localStorage.getItem('scrollPosition');
