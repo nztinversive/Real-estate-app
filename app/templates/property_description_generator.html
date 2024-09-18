@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Description Generator - Real Estate Investment Platform</title>
+    <title>Property Description Generator - Zero Percent Investor Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -33,10 +33,10 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center" data-aos="fade-down">Generate Your Property Description</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">Generate Your Property Description</h1>
         
         <div class="max-w-3xl mx-auto">
-            <form id="propertyForm" action="{{ url_for('property_description_generator') }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-lg rounded-lg p-8 space-y-6" data-aos="fade-up">
+            <form id="propertyForm" action="{{ url_for('property_description_generator') }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-lg rounded-lg p-8 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="property_type" class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
@@ -85,14 +85,14 @@
             </form>
 
             {% if description %}
-            <div class="mt-12 bg-white shadow-lg rounded-lg p-8" data-aos="fade-up">
+            <div id="generatedContent" class="mt-12 bg-white shadow-lg rounded-lg p-8">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-900">Generated Description</h2>
                 <p class="text-gray-700 leading-relaxed">{{ description }}</p>
                 
                 <h3 class="text-xl font-semibold mt-8 mb-4 text-gray-900">Uploaded Photos</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {% for file in uploaded_files %}
-                    <img src="{{ url_for('static', filename='uploads/' + file) }}" alt="Property photo" class="w-full h-48 object-cover rounded-lg shadow-md">
+                    {% for photo in photo_info %}
+                    <img src="{{ photo.file_path }}" alt="Property photo" class="w-full h-48 object-cover rounded-lg shadow-md">
                     {% endfor %}
                 </div>
             </div>
@@ -102,7 +102,7 @@
 
     <footer class="bg-white mt-auto">
         <div class="container mx-auto py-6 px-4">
-            <p class="text-center text-gray-600">&copy; 2024 Real Estate Investment Platform. All rights reserved.</p>
+            <p class="text-center text-gray-600">&copy; 2024 Zero Percent Investor Platform. All rights reserved.</p>
         </div>
     </footer>
 
@@ -130,6 +130,32 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Scroll to generated content if it exists
+        document.addEventListener('DOMContentLoaded', function() {
+            const generatedContent = document.getElementById('generatedContent');
+            if (generatedContent) {
+                generatedContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // Preserve form data and scroll position on page reload
+        window.onbeforeunload = function() {
+            localStorage.setItem('formData', JSON.stringify(Object.fromEntries(new FormData(document.getElementById('propertyForm')))));
+            localStorage.setItem('scrollPosition', window.pageYOffset);
+        };
+
+        window.onload = function() {
+            const formData = JSON.parse(localStorage.getItem('formData'));
+            if (formData) {
+                Object.keys(formData).forEach(key => {
+                    const field = document.getElementById(key);
+                    if (field) field.value = formData[key];
+                });
+            }
+            const scrollPosition = localStorage.getItem('scrollPosition');
+            if (scrollPosition) window.scrollTo(0, parseInt(scrollPosition));
+        };
     </script>
 </body>
 </html>

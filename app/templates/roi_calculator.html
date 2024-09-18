@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROI Calculator - Real Estate Investment Platform</title>
+    <title>ROI Calculator - Zero Percent Investor Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -78,12 +78,39 @@
                 </div>
             </div>
         </div>
+
+        <!-- View Saved Calculations Button -->
+        <div class="mt-8 text-center">
+            <button id="viewSavedCalculations" class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                View Saved Calculations
+            </button>
+        </div>
+
+        <!-- Saved Calculations (Initially Hidden) -->
+        <div id="savedCalculationsSection" class="mt-12 hidden" data-aos="fade-up">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Saved Calculations</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Initial Investment</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Annual Return</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Investment Period</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Return</th>
+                        </tr>
+                    </thead>
+                    <tbody id="savedCalculationsBody"></tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <footer class="bg-white">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-gray-500 text-sm">
-                &copy; 2024 Real Estate Investment Platform. All rights reserved.
+                &copy; 2024 Zero Percent Investor Platform. All rights reserved.
             </p>
         </div>
     </footer>
@@ -93,6 +120,8 @@
             duration: 800,
             once: true,
         });
+
+        let chart;
 
         document.getElementById('roiForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -122,9 +151,14 @@
 
                 document.getElementById('results').classList.remove('hidden');
 
-                // Create chart
+                // Destroy existing chart if it exists
+                if (chart) {
+                    chart.destroy();
+                }
+
+                // Create new chart
                 const ctx = document.getElementById('roiChart').getContext('2d');
-                new Chart(ctx, {
+                chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['Initial Investment', 'Total Return'],
@@ -151,9 +185,38 @@
                     }
                 });
 
-                console.log('Calculations saved:', data);
+                // Save calculation
+                saveCalculation(data);
             })
             .catch((error) => console.error('Error:', error));
+        });
+
+        function saveCalculation(data) {
+            const tableBody = document.getElementById('savedCalculationsBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td class="px-4 py-2 whitespace-nowrap">${new Date().toLocaleString()}</td>
+                <td class="px-4 py-2 whitespace-nowrap">$${data.initial_investment.toFixed(2)}</td>
+                <td class="px-4 py-2 whitespace-nowrap">$${data.annual_return.toFixed(2)}</td>
+                <td class="px-4 py-2 whitespace-nowrap">${data.investment_period} years</td>
+                <td class="px-4 py-2 whitespace-nowrap">${data.roi.toFixed(2)}%</td>
+                <td class="px-4 py-2 whitespace-nowrap">$${data.total_return.toFixed(2)}</td>
+            `;
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+            document.getElementById('savedCalculationsSection').classList.remove('hidden');
+        }
+
+        // View Saved Calculations Button
+        document.getElementById('viewSavedCalculations').addEventListener('click', function() {
+            const savedCalculationsSection = document.getElementById('savedCalculationsSection');
+            savedCalculationsSection.classList.toggle('hidden');
+            this.textContent = savedCalculationsSection.classList.contains('hidden') ? 'View Saved Calculations' : 'Hide Saved Calculations';
+        });
+
+        // Load saved calculations on page load
+        window.addEventListener('load', function() {
+            const savedCalculations = {{ saved_calculations|tojson|safe }};
+            savedCalculations.forEach(calc => saveCalculation(calc.data));
         });
     </script>
 </body>

@@ -42,7 +42,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Property 1 Input Form -->
             <div data-aos="fade-right">
-                <form id="property1Form" class="bg-yellow-50 shadow-lg rounded-lg p-6 space-y-6">
+                <form id="property1Form" class="bg-white shadow-lg rounded-lg p-6 space-y-6">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Property 1 Details</h2>
                     <div>
                         <label for="property1_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
@@ -61,7 +61,7 @@
 
             <!-- Property 2 Input Form -->
             <div data-aos="fade-left">
-                <form id="property2Form" class="bg-yellow-50 shadow-lg rounded-lg p-6 space-y-6">
+                <form id="property2Form" class="bg-white shadow-lg rounded-lg p-6 space-y-6">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Property 2 Details</h2>
                     <div>
                         <label for="property2_price" class="block text-sm font-medium text-gray-700">Purchase Price ($)</label>
@@ -85,10 +85,12 @@
             </button>
         </div>
 
-        <div id="comparisonResults" class="mt-8 bg-yellow-50 shadow-lg rounded-lg p-6 hidden">
+        <div id="comparisonResults" class="mt-8 bg-white shadow-lg rounded-lg p-6 hidden">
             <h2 class="text-2xl font-semibold text-gray-900 mb-4">Comparison Results</h2>
             <div id="resultsContent" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <canvas id="comparisonChart" class="mt-8" width="400" height="200"></canvas>
+            <div class="mt-8">
+                <canvas id="comparisonChart" width="400" height="200"></canvas>
+            </div>
         </div>
 
         <div id="savedComparisons" class="mt-8">
@@ -110,6 +112,8 @@
             duration: 800,
             once: true,
         });
+
+        let comparisonChart;
 
         document.getElementById('compareButton').addEventListener('click', function() {
             const property1 = {
@@ -144,7 +148,7 @@
             };
 
             comparison.betterCashFlow = comparison.property1.cashFlow > comparison.property2.cashFlow ? 'Property 1' : 'Property 2';
-            comparison.betterCapRate = comparison.property1.capRate > comparison.property2.capRate ? 'Property 1' : 'Property 2';
+            comparison.betterCapRate = parseFloat(comparison.property1.capRate) > parseFloat(comparison.property2.capRate) ? 'Property 1' : 'Property 2';
 
             return comparison;
         }
@@ -176,30 +180,38 @@
 
             document.getElementById('comparisonResults').classList.remove('hidden');
 
-            // Create chart
+            createChart(comparison);
+        }
+
+        function createChart(comparison) {
             const ctx = document.getElementById('comparisonChart').getContext('2d');
-            new Chart(ctx, {
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+            comparisonChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Cash Flow', 'Cap Rate'],
                     datasets: [
                         {
                             label: 'Property 1',
-                            data: [comparison.property1.cashFlow, comparison.property1.capRate],
-                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                            borderColor: 'rgba(255, 206, 86, 1)',
+                            data: [comparison.property1.cashFlow, parseFloat(comparison.property1.capRate)],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Property 2',
-                            data: [comparison.property2.cashFlow, comparison.property2.capRate],
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
+                            data: [comparison.property2.cashFlow, parseFloat(comparison.property2.capRate)],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1
                         }
                     ]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
@@ -220,13 +232,20 @@
             const savedComparisons = JSON.parse(localStorage.getItem('savedComparisons') || '[]');
             const savedComparisonsContent = document.getElementById('savedComparisonsContent');
             savedComparisonsContent.innerHTML = savedComparisons.map((comparison, index) => `
-                <div class="bg-yellow-50 shadow-lg rounded-lg p-4">
+                <div class="bg-white shadow-lg rounded-lg p-4 cursor-pointer hover:bg-gray-50" onclick="showSavedComparison(${index})">
                     <h3 class="text-lg font-semibold">Comparison ${index + 1}</h3>
                     <p>Property 1: $${comparison.property1.price} | Cash Flow: $${comparison.property1.cashFlow} | Cap Rate: ${comparison.property1.capRate}%</p>
                     <p>Property 2: $${comparison.property2.price} | Cash Flow: $${comparison.property2.cashFlow} | Cap Rate: ${comparison.property2.capRate}%</p>
                     <p>Better Cash Flow: ${comparison.betterCashFlow} | Better Cap Rate: ${comparison.betterCapRate}</p>
                 </div>
             `).join('');
+        }
+
+        function showSavedComparison(index) {
+            const savedComparisons = JSON.parse(localStorage.getItem('savedComparisons') || '[]');
+            const comparison = savedComparisons[index];
+            displayComparison(comparison);
+            document.getElementById('comparisonResults').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Display saved comparisons on page load
